@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getDatabaseConfig } from './config/database.config';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -16,8 +15,9 @@ import { getDatabaseConfig } from './config/database.config';
       useFactory: (configService: ConfigService) =>
         getDatabaseConfig(configService),
     }),
+    HealthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
