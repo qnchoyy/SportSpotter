@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getDatabaseConfig } from './config/database.config';
 import { HealthModule } from './health/health.module';
+import { UsersModule } from './users/users.module';
+import { UserSkillModule } from './user-skill/user-skill.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { HealthModule } from './health/health.module';
         getDatabaseConfig(configService),
     }),
     HealthModule,
+    UsersModule,
+    UserSkillModule,
   ],
   controllers: [],
   providers: [],
