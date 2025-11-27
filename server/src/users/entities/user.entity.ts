@@ -31,7 +31,7 @@ export class User {
   lastName: string;
 
   @OneToMany(() => UserSportSkill, (userSportSkill) => userSportSkill.user)
-  skills: UserSportSkill[];
+  skills: UserSportSkill;
 
   @CreateDateColumn()
   createdAt: Date;
