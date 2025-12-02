@@ -5,6 +5,7 @@ import { getDatabaseConfig } from './config/database.config';
 import { HealthModule } from './health/health.module';
 import { UsersModule } from './users/users.module';
 import { UserSkillModule } from './user-skill/user-skill.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UserSkillModule } from './user-skill/user-skill.module';
     HealthModule,
     UsersModule,
     UserSkillModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
