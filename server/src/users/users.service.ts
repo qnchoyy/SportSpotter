@@ -38,4 +38,17 @@ export class UsersService {
 
     return this.userRepository.save(user);
   }
+
+  async findById(id: string): Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { id },
+    });
+  }
+
+  async findByEmailWithPassword(email: string): Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { email },
+      select: ['id', 'email', 'username', 'password', 'firstName', 'lastName'],
+    });
+  }
 }
