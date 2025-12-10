@@ -36,4 +36,10 @@ export class UserSkillService {
 
     return await this.userSportSkillRepository.save(newSkill);
   }
+
+  async getSkillsForUser(userId: string): Promise<UserSportSkill[]> {
+    return this.userSportSkillRepository.find({
+      where: { user: { id: userId } },
+    });
+  }
 }

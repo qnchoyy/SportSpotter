@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserSkillService } from './user-skill.service';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
@@ -7,7 +7,7 @@ import { CreateUserSkillDto } from './dto/create-user-skill.dto';
 import { plainToInstance } from 'class-transformer';
 import { UserSkillResponseDto } from './dto/user-skill-response.dto';
 
-@Controller('user-skill')
+@Controller('user-skills')
 export class UserSkillController {
   constructor(private readonly userSkillService: UserSkillService) {}
 
@@ -23,5 +23,13 @@ export class UserSkillController {
     );
 
     return plainToInstance(UserSkillResponseDto, skill);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getMySkills(@GetUser() user: User): Promise<UserSkillResponseDto[]> {
+    const skills = await this.userSkillService.getSkillsForUser(user.id);
+
+    return plainToInstance(UserSkillResponseDto, skills);
   }
 }
