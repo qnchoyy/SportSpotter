@@ -1,9 +1,15 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserSportSkill } from './entities/user-sport-skill.entity';
 import { Repository } from 'typeorm';
 import { CreateUserSkillDto } from './dto/create-user-skill.dto';
 import { User } from 'src/users/entities/user.entity';
+import { UpdateUserSkillDto } from './dto/update-user-skill.dto';
 
 @Injectable()
 export class UserSkillService {
@@ -41,5 +47,28 @@ export class UserSkillService {
     return this.userSportSkillRepository.find({
       where: { user: { id: userId } },
     });
+  }
+
+  async updateSkill(
+    skillId: string,
+    userId: string,
+    updateUserSkillDto: UpdateUserSkillDto,
+  ): Promise<UserSportSkill> {
+    const skill = await this.userSportSkillRepository.findOne({
+      where: { id: skillId },
+      relations: ['user'],
+    });
+
+    if (!skill) {
+      throw new NotFoundException('Skill not found');
+    }
+
+    if (skill.user.id !== userId) {
+      throw new ForbiddenException('You can only update your own skills');
+    }
+
+    skill.skillLevel = updateUserSkillDto.skillLevel;
+
+    return await this.userSportSkillRepository.save(skill);
   }
 }
