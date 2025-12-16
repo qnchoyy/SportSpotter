@@ -1,0 +1,45 @@
+import { Exclude, Expose, Type } from 'class-transformer';
+import { SkillLevel } from 'src/common/enums/skill-level.enum';
+import { SportType } from 'src/common/enums/sport-type.enum';
+import { MatchStatus } from 'src/common/enums/match-status.enum';
+import { OrganizerResponseDto } from './organizer-response.dto';
+
+@Exclude()
+export class MatchResponseDto {
+  @Expose()
+  id: string;
+
+  @Expose()
+  sport: SportType;
+
+  @Expose()
+  status: MatchStatus;
+
+  @Expose()
+  startTime: Date;
+
+  @Expose()
+  locationName?: string;
+
+  @Expose()
+  locationAddress?: string;
+
+  @Expose()
+  numberOfTeams: number;
+
+  @Expose()
+  playersPerTeam: number;
+
+  @Expose()
+  minSkillLevel: SkillLevel;
+
+  @Expose()
+  maxSkillLevel: SkillLevel;
+
+  @Expose()
+  @Type(() => OrganizerResponseDto)
+  organizer: OrganizerResponseDto;
+
+  @Expose()
+  createdAt: Date;
+}
