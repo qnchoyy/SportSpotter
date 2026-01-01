@@ -45,7 +45,7 @@ export class MatchesController {
   async findOneById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<MatchResponseDto> {
-    const match = await this.matchesService.findById(id);
+    const match = await this.matchesService.findOneById(id);
     return plainToInstance(MatchResponseDto, match, {
       excludeExtraneousValues: true,
     });

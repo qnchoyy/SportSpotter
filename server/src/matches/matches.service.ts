@@ -86,7 +86,7 @@ export class MatchesService {
     });
   }
 
-  async findById(id: string): Promise<Match> {
+  async findOneById(id: string): Promise<Match> {
     const match = await this.matchRepository.findOne({
       where: { id },
       relations: ['organizer'],
