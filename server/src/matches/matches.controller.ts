@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { MatchesService } from './matches.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
@@ -28,6 +37,16 @@ export class MatchesController {
   async findAll(@Query() query: MatchQueryDto): Promise<MatchResponseDto[]> {
     const matches = await this.matchesService.findAll(query);
     return plainToInstance(MatchResponseDto, matches, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Get(':id')
+  async findOneById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<MatchResponseDto> {
+    const match = await this.matchesService.findById(id);
+    return plainToInstance(MatchResponseDto, match, {
       excludeExtraneousValues: true,
     });
   }

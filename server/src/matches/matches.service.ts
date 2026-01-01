@@ -85,4 +85,17 @@ export class MatchesService {
       },
     });
   }
+
+  async findById(id: string): Promise<Match> {
+    const match = await this.matchRepository.findOne({
+      where: { id },
+      relations: ['organizer'],
+    });
+
+    if (!match) {
+      throw new NotFoundException(`Match with ID ${id} not found`);
+    }
+
+    return match;
+  }
 }
