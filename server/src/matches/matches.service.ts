@@ -1,11 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Match } from './entities/match.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { SkillLevel } from 'src/common/enums/skill-level.enum';
 import { SportType } from 'src/common/enums/sport-type.enum';
+import { MatchQueryDto } from './dto/match-query.dto';
 
 @Injectable()
 export class MatchesService {
@@ -59,5 +64,25 @@ export class MatchesService {
     });
 
     return this.matchRepository.save(match);
+  }
+
+  async findAll(query: MatchQueryDto): Promise<Match[]> {
+    const where: FindOptionsWhere<Match> = {};
+
+    if (query.sport) {
+      where.sport = query.sport;
+    }
+
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    return await this.matchRepository.find({
+      where,
+      relations: ['organizer'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
   }
 }
