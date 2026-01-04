@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -16,6 +17,7 @@ import { CreateMatchDto } from './dto/create-match.dto';
 import { MatchResponseDto } from './dto/match-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { MatchQueryDto } from './dto/match-query.dto';
+import { UpdateMatchDto } from './dto/update-match.dto';
 
 @Controller('matches')
 export class MatchesController {
@@ -46,6 +48,24 @@ export class MatchesController {
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<MatchResponseDto> {
     const match = await this.matchesService.findOneById(id);
+    return plainToInstance(MatchResponseDto, match, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  async updateMatch(
+    @Param('id', ParseUUIDPipe) id: string,
+    @GetUser() user: User,
+    @Body() updateMatchDto: UpdateMatchDto,
+  ): Promise<MatchResponseDto> {
+    const match = await this.matchesService.updateMatch(
+      id,
+      user,
+      updateMatchDto,
+    );
+
     return plainToInstance(MatchResponseDto, match, {
       excludeExtraneousValues: true,
     });

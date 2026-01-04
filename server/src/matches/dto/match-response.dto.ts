@@ -42,4 +42,7 @@ export class MatchResponseDto {
 
   @Expose()
   createdAt: Date;
+
+  @Expose()
+  updatedAt: Date;
 }

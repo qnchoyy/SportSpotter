@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,6 +12,8 @@ import { CreateMatchDto } from './dto/create-match.dto';
 import { SkillLevel } from 'src/common/enums/skill-level.enum';
 import { SportType } from 'src/common/enums/sport-type.enum';
 import { MatchQueryDto } from './dto/match-query.dto';
+import { UpdateMatchDto } from './dto/update-match.dto';
+import { MatchStatus } from 'src/common/enums/match-status.enum';
 
 @Injectable()
 export class MatchesService {
@@ -97,5 +100,52 @@ export class MatchesService {
     }
 
     return match;
+  }
+
+  async updateMatch(
+    matchId: string,
+    organizer: User,
+    updateMatchDto: UpdateMatchDto,
+  ): Promise<Match> {
+    const match = await this.matchRepository.findOne({
+      where: { id: matchId },
+      relations: ['organizer'],
+    });
+
+    if (!match) {
+      throw new NotFoundException(`Match with ID ${matchId} not found`);
+    }
+
+    if (match.organizer.id !== organizer.id) {
+      throw new ForbiddenException('You can only update your own matches');
+    }
+
+    if (
+      updateMatchDto.status &&
+      updateMatchDto.status !== MatchStatus.CANCELED
+    ) {
+      throw new BadRequestException(
+        'You can only cancel a match. Other status changes are automatic.',
+      );
+    }
+
+    const minSkillLevel = updateMatchDto.minSkillLevel ?? match.minSkillLevel;
+    const maxSkillLevel = updateMatchDto.maxSkillLevel ?? match.maxSkillLevel;
+
+    if (
+      this.skillLevelOrder[minSkillLevel] > this.skillLevelOrder[maxSkillLevel]
+    ) {
+      throw new BadRequestException(
+        'minSkillLevel cannot be greater than maxSkillLevel',
+      );
+    }
+
+    Object.assign(match, updateMatchDto);
+
+    if (updateMatchDto.startTime) {
+      match.startTime = new Date(updateMatchDto.startTime);
+    }
+
+    return await this.matchRepository.save(match);
   }
 }
