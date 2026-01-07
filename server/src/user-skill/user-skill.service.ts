@@ -10,6 +10,11 @@ import { Repository } from 'typeorm';
 import { CreateUserSkillDto } from './dto/create-user-skill.dto';
 import { User } from 'src/users/entities/user.entity';
 import { UpdateUserSkillDto } from './dto/update-user-skill.dto';
+import { SportType } from 'src/common/enums/sport-type.enum';
+import {
+  SKILL_LEVEL_ORDER,
+  SkillLevel,
+} from 'src/common/enums/skill-level.enum';
 
 @Injectable()
 export class UserSkillService {
@@ -70,5 +75,28 @@ export class UserSkillService {
     skill.skillLevel = updateUserSkillDto.skillLevel;
 
     return await this.userSportSkillRepository.save(skill);
+  }
+
+  async meetSkillRequirements(
+    userId: string,
+    sport: SportType,
+    minSkillLevel: SkillLevel,
+    maxSkillLevel: SkillLevel,
+  ): Promise<boolean> {
+    const userSkill = await this.userSportSkillRepository.findOne({
+      where: {
+        user: { id: userId },
+        sport: sport,
+      },
+    });
+    if (!userSkill) {
+      return false;
+    }
+
+    const userLevel = SKILL_LEVEL_ORDER[userSkill.skillLevel];
+    const minLevel = SKILL_LEVEL_ORDER[minSkillLevel];
+    const maxLevel = SKILL_LEVEL_ORDER[maxSkillLevel];
+
+    return userLevel >= minLevel && userLevel <= maxLevel;
   }
 }

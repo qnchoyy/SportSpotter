@@ -9,5 +9,6 @@ import { User } from 'src/users/entities/user.entity';
   imports: [TypeOrmModule.forFeature([UserSportSkill, User])],
   providers: [UserSkillService],
   controllers: [UserSkillController],
+  exports: [UserSkillService],
 })
 export class UserSkillModule {}
