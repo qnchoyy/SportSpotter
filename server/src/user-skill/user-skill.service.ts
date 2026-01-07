@@ -77,7 +77,7 @@ export class UserSkillService {
     return await this.userSportSkillRepository.save(skill);
   }
 
-  async meetSkillRequirements(
+  async meetsSkillRequirements(
     userId: string,
     sport: SportType,
     minSkillLevel: SkillLevel,

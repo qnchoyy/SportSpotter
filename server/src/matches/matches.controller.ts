@@ -18,10 +18,16 @@ import { MatchResponseDto } from './dto/match-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { MatchQueryDto } from './dto/match-query.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
+import { ParticipationService } from 'src/participation/participation.service';
+import { JoinMatchDto } from 'src/participation/dto/join-match.dto';
+import { ParticipationResponseDto } from 'src/participation/dto/participation-response.dto';
 
 @Controller('matches')
 export class MatchesController {
-  constructor(private readonly matchesService: MatchesService) {}
+  constructor(
+    private readonly matchesService: MatchesService,
+    private readonly participationService: ParticipationService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -67,6 +73,24 @@ export class MatchesController {
     );
 
     return plainToInstance(MatchResponseDto, match, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':matchId/join')
+  async joinMatch(
+    @Param('matchId', ParseUUIDPipe) matchId: string,
+    @Body() joinMatchDto: JoinMatchDto,
+    @GetUser() user: User,
+  ): Promise<ParticipationResponseDto> {
+    const participation = await this.participationService.joinMatch(
+      user.id,
+      matchId,
+      joinMatchDto.team,
+    );
+
+    return plainToInstance(ParticipationResponseDto, participation, {
       excludeExtraneousValues: true,
     });
   }
