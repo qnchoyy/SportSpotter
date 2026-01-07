@@ -1,4 +1,5 @@
 import { Exclude } from 'class-transformer';
+import { Participation } from 'src/participation/entities/participation.entity';
 import { UserSportSkill } from 'src/user-skill/entities/user-sport-skill.entity';
 import {
   Column,
@@ -32,6 +33,9 @@ export class User {
 
   @OneToMany(() => UserSportSkill, (userSportSkill) => userSportSkill.user)
   skills: UserSportSkill[];
+
+  @OneToMany(() => Participation, (participation) => participation.user)
+  participations: Participation[];
 
   @CreateDateColumn()
   createdAt: Date;

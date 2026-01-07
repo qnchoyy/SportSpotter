@@ -1,12 +1,14 @@
 import { MatchStatus } from 'src/common/enums/match-status.enum';
 import { SkillLevel } from 'src/common/enums/skill-level.enum';
 import { SportType } from 'src/common/enums/sport-type.enum';
+import { Participation } from 'src/participation/entities/participation.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -48,6 +50,9 @@ export class Match {
 
   @Column({ type: 'enum', enum: SkillLevel })
   maxSkillLevel: SkillLevel;
+
+  @OneToMany(() => Participation, (participation) => participation.match)
+  participations: Participation[];
 
   @CreateDateColumn()
   createdAt: Date;
