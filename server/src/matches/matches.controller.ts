@@ -104,4 +104,14 @@ export class MatchesController {
   ): Promise<void> {
     await this.participationService.leaveMatch(user.id, matchId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':matchId/participants/:userId')
+  async removeParticipant(
+    @Param('matchId', ParseUUIDPipe) matchId: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
+    @GetUser() user: User,
+  ): Promise<void> {
+    await this.participationService.removeParticipant(user.id, matchId, userId);
+  }
 }

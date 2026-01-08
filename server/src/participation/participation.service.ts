@@ -121,4 +121,48 @@ export class ParticipationService {
 
     await this.participationRepository.delete({ userId, matchId });
   }
+
+  async removeParticipant(
+    organizerId: string,
+    matchId: string,
+    participantUserId: string,
+  ): Promise<void> {
+    const match = await this.matchRepository.findOne({
+      where: { id: matchId },
+      relations: ['organizer'],
+    });
+
+    if (!match) {
+      throw new NotFoundException(`Match with ID ${matchId} not found.`);
+    }
+
+    if (match.status !== MatchStatus.OPEN) {
+      throw new BadRequestException(
+        `Cannot remove participants from match with status ${match.status}`,
+      );
+    }
+
+    if (match.organizer.id !== organizerId) {
+      throw new ForbiddenException('Only the organizer can kick participants');
+    }
+
+    if (participantUserId === organizerId) {
+      throw new BadRequestException(
+        'Organizer cannot remove themselves from the match',
+      );
+    }
+
+    const participation = await this.participationRepository.findOne({
+      where: { userId: participantUserId, matchId },
+    });
+
+    if (!participation) {
+      throw new NotFoundException('User is not participating in this match');
+    }
+
+    await this.participationRepository.delete({
+      userId: participantUserId,
+      matchId,
+    });
+  }
 }
