@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -93,5 +94,14 @@ export class MatchesController {
     return plainToInstance(ParticipationResponseDto, participation, {
       excludeExtraneousValues: true,
     });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':matchId/leave')
+  async leaveMatch(
+    @Param('matchId', ParseUUIDPipe) matchId: string,
+    @GetUser() user: User,
+  ): Promise<void> {
+    await this.participationService.leaveMatch(user.id, matchId);
   }
 }

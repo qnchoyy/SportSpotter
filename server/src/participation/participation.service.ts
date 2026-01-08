@@ -95,4 +95,30 @@ export class ParticipationService {
       throw e;
     }
   }
+
+  async leaveMatch(userId: string, matchId: string): Promise<void> {
+    const match = await this.matchRepository.findOne({
+      where: { id: matchId },
+    });
+
+    if (!match) {
+      throw new NotFoundException(`Match with ID ${matchId} not found.`);
+    }
+
+    if (match.status !== MatchStatus.OPEN) {
+      throw new BadRequestException(
+        `Cannot leave match with status ${match.status}`,
+      );
+    }
+
+    const participation = await this.participationRepository.findOne({
+      where: { userId, matchId },
+    });
+
+    if (!participation) {
+      throw new NotFoundException('You are not participating in this match');
+    }
+
+    await this.participationRepository.delete({ userId, matchId });
+  }
 }
