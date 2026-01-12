@@ -165,4 +165,15 @@ export class ParticipationService {
       matchId,
     });
   }
+
+  async getMatchParticipants(matchId: string): Promise<Participation[]> {
+    return this.participationRepository.find({
+      where: { matchId },
+      relations: ['user'],
+      order: {
+        team: 'ASC',
+        joinedAt: 'ASC',
+      },
+    });
+  }
 }

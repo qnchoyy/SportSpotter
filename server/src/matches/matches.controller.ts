@@ -22,6 +22,7 @@ import { UpdateMatchDto } from './dto/update-match.dto';
 import { ParticipationService } from 'src/participation/participation.service';
 import { JoinMatchDto } from 'src/participation/dto/join-match.dto';
 import { ParticipationResponseDto } from 'src/participation/dto/participation-response.dto';
+import { ParticipantResponseDto } from 'src/participation/dto/participant-response.dto';
 
 @Controller('matches')
 export class MatchesController {
@@ -56,6 +57,18 @@ export class MatchesController {
   ): Promise<MatchResponseDto> {
     const match = await this.matchesService.findOneById(id);
     return plainToInstance(MatchResponseDto, match, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Get(':matchId/participants')
+  async getMatchParticipants(
+    @Param('matchId', ParseUUIDPipe) matchId: string,
+  ): Promise<ParticipantResponseDto[]> {
+    const participants =
+      await this.participationService.getMatchParticipants(matchId);
+
+    return plainToInstance(ParticipantResponseDto, participants, {
       excludeExtraneousValues: true,
     });
   }
