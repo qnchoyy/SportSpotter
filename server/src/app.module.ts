@@ -8,6 +8,7 @@ import { UserSkillModule } from './user-skill/user-skill.module';
 import { AuthModule } from './auth/auth.module';
 import { MatchesModule } from './matches/matches.module';
 import { ParticipationModule } from './participation/participation.module';
+import { VenuesModule } from './venues/venues.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ParticipationModule } from './participation/participation.module';
     AuthModule,
     MatchesModule,
     ParticipationModule,
+    VenuesModule,
   ],
   controllers: [],
   providers: [],
