@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Venue } from './entities/venue.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
@@ -28,5 +28,17 @@ export class VenuesService {
         name: 'ASC',
       },
     });
+  }
+
+  async findOneById(id: string): Promise<Venue> {
+    const venue = await this.venueRepository.findOne({
+      where: { id },
+    });
+
+    if (!venue) {
+      throw new NotFoundException(`Venue with ID ${id} not found`);
+    }
+
+    return venue;
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import { VenuesService } from './venues.service';
 import { VenueQueryDto } from './dto/venue-query.dto';
 import { VenueResponseDto } from './dto/venue-response.dto';
@@ -13,6 +13,17 @@ export class VenuesController {
     const venues = await this.venuesService.findAll(query);
 
     return plainToInstance(VenueResponseDto, venues, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @Get(':id')
+  async findOneById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<VenueResponseDto> {
+    const venue = await this.venuesService.findOneById(id);
+
+    return plainToInstance(VenueResponseDto, venue, {
       excludeExtraneousValues: true,
     });
   }
