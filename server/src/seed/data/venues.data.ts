@@ -1,0 +1,40 @@
+import { SportType } from 'src/common/enums/sport-type.enum';
+
+export const venuesData = [
+  {
+    name: 'Sportna Sofia',
+    city: 'Sofia',
+    address: 'Pancharevo, Sofia 1000',
+    latitude: 42.6169,
+    longitude: 23.4062,
+    sportType: SportType.FOOTBALL,
+    capacityPlayers: 12,
+  },
+  {
+    name: 'Arena Zaharna Fabrika',
+    city: 'Sofia',
+    address: 'bul. Knyaginya Maria Luiza 96, Sofia 1202',
+    latitude: 42.7089,
+    longitude: 23.3214,
+    sportType: SportType.FOOTBALL,
+    capacityPlayers: 10,
+  },
+  {
+    name: 'Bulgarian Tennis Federation',
+    city: 'Sofia',
+    address: 'Boulevard Bulgaria 51, Sofia 1404',
+    latitude: 42.6624,
+    longitude: 23.3547,
+    sportType: SportType.TENNIS,
+    capacityPlayers: 4,
+  },
+  {
+    name: 'Tennis Courts Borisova Gradina',
+    city: 'Sofia',
+    address: 'Borisova Gradina Park, Sofia 1000',
+    latitude: 42.6892,
+    longitude: 23.3411,
+    sportType: SportType.TENNIS,
+    capacityPlayers: 4,
+  },
+];
