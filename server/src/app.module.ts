@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { MatchesModule } from './matches/matches.module';
 import { ParticipationModule } from './participation/participation.module';
 import { VenuesModule } from './venues/venues.module';
+import { BookingsModule } from './bookings/bookings.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { VenuesModule } from './venues/venues.module';
     MatchesModule,
     ParticipationModule,
     VenuesModule,
+    BookingsModule,
   ],
   controllers: [],
   providers: [],
