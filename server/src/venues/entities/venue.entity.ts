@@ -26,4 +26,13 @@ export class Venue {
 
   @Column({ type: 'decimal', precision: 10, scale: 6 })
   longitude: number;
+
+  @Column({ type: 'time', default: '11:00' })
+  openingTime: string;
+
+  @Column({ type: 'time', default: '20:00' })
+  closingTime: string;
+
+  @Column({ type: 'int', default: 60 })
+  slotDurationMinutes: number;
 }

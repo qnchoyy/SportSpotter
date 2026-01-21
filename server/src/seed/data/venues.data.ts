@@ -9,6 +9,9 @@ export const venuesData = [
     longitude: 23.4062,
     sportType: SportType.FOOTBALL,
     capacityPlayers: 12,
+    openingTime: '11:00',
+    closingTime: '21:00',
+    slotDurationMinutes: 60,
   },
   {
     name: 'Arena Zaharna Fabrika',
@@ -18,6 +21,9 @@ export const venuesData = [
     longitude: 23.3214,
     sportType: SportType.FOOTBALL,
     capacityPlayers: 10,
+    openingTime: '11:00',
+    closingTime: '21:00',
+    slotDurationMinutes: 60,
   },
   {
     name: 'Bulgarian Tennis Federation',
@@ -27,6 +33,9 @@ export const venuesData = [
     longitude: 23.3547,
     sportType: SportType.TENNIS,
     capacityPlayers: 4,
+    openingTime: '11:00',
+    closingTime: '21:00',
+    slotDurationMinutes: 60,
   },
   {
     name: 'Tennis Courts Borisova Gradina',
@@ -36,5 +45,8 @@ export const venuesData = [
     longitude: 23.3411,
     sportType: SportType.TENNIS,
     capacityPlayers: 4,
+    openingTime: '11:00',
+    closingTime: '21:00',
+    slotDurationMinutes: 60,
   },
 ];
