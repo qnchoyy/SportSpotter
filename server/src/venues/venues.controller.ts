@@ -3,6 +3,8 @@ import { VenuesService } from './venues.service';
 import { VenueQueryDto } from './dto/venue-query.dto';
 import { VenueResponseDto } from './dto/venue-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { VenueSlotsQueryDto } from './dto/venue-slots-query.dto';
+import { VenueSlotResponseDto } from './dto/venue-slot-response.dto';
 
 @Controller('venues')
 export class VenuesController {
@@ -15,6 +17,14 @@ export class VenuesController {
     return plainToInstance(VenueResponseDto, venues, {
       excludeExtraneousValues: true,
     });
+  }
+
+  @Get(':id/slots')
+  getVenueSlots(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: VenueSlotsQueryDto,
+  ): Promise<VenueSlotResponseDto[]> {
+    return this.venuesService.getVenueSlots(id, query.date);
   }
 
   @Get(':id')

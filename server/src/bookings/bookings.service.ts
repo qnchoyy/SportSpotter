@@ -30,4 +30,24 @@ export class BookingsService {
 
     return isAvailable;
   }
+
+  async getBookingsForVenueAndDate(
+    venueId: string,
+    date: Date,
+  ): Promise<Booking[]> {
+    // Start of day (00:00:00.000)
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    // End of day (23:59:59.999)
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return this.bookingRepository
+      .createQueryBuilder('booking')
+      .where('booking.venueId = :venueId', { venueId })
+      .andWhere('booking.startAt < :endOfDay', { endOfDay })
+      .andWhere('booking.endAt > :startOfDay', { startOfDay })
+      .getMany();
+  }
 }
