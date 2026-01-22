@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Match } from './entities/match.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { DataSource, FindOptionsWhere, Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { SkillLevel } from 'src/common/enums/skill-level.enum';
@@ -21,6 +21,7 @@ import { timeToMinutes } from 'src/common/utils/time.util';
 @Injectable()
 export class MatchesService {
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(Match)
     private readonly matchRepository: Repository<Match>,
     @InjectRepository(Venue)
@@ -83,36 +84,38 @@ export class MatchesService {
       startAt.getTime() + venue.slotDurationMinutes * 60_000,
     );
 
-    const match = this.matchRepository.create({
-      organizer,
-      sport,
-      startTime: startAt,
-      venueId: venue.id,
-      numberOfTeams: 2,
-      playersPerTeam,
-      minSkillLevel,
-      maxSkillLevel,
+    return this.dataSource.transaction(async (manager) => {
+      const matchRepo = manager.getRepository(Match);
+
+      const match = matchRepo.create({
+        organizer,
+        sport,
+        startTime: startAt,
+        venueId: venue.id,
+        numberOfTeams: 2,
+        playersPerTeam,
+        minSkillLevel,
+        maxSkillLevel,
+      });
+
+      const saved = await matchRepo.save(match);
+
+      await this.bookingsService.createBookingForMatch(
+        { venueId: venue.id, matchId: saved.id, startAt, endAt },
+        manager,
+      );
+
+      const result = await matchRepo.findOne({
+        where: { id: saved.id },
+        relations: ['organizer', 'venue'],
+      });
+
+      if (!result) {
+        throw new NotFoundException(`Match with ID ${saved.id} not found`);
+      }
+
+      return result;
     });
-
-    const saved = await this.matchRepository.save(match);
-
-    await this.bookingsService.createBookingForMatch({
-      venueId: venue.id,
-      matchId: saved.id,
-      startAt,
-      endAt,
-    });
-
-    const result = await this.matchRepository.findOne({
-      where: { id: saved.id },
-      relations: ['organizer', 'venue'],
-    });
-
-    if (!result) {
-      throw new NotFoundException(`Match with ID ${saved.id} not found`);
-    }
-
-    return result;
   }
 
   async findAll(query: MatchQueryDto): Promise<Match[]> {

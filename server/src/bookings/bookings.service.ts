@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Booking } from './entities/booking.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 
 @Injectable()
 export class BookingsService {
@@ -55,32 +55,41 @@ export class BookingsService {
       .getMany();
   }
 
-  async createBookingForMatch(params: {
-    venueId: string;
-    matchId: string;
-    startAt: Date;
-    endAt: Date;
-  }): Promise<Booking> {
+  async createBookingForMatch(
+    params: {
+      venueId: string;
+      matchId: string;
+      startAt: Date;
+      endAt: Date;
+    },
+    manager?: EntityManager,
+  ): Promise<Booking> {
     const { venueId, matchId, startAt, endAt } = params;
 
-    const isAvailable = await this.checkVenueAvailability(
-      venueId,
-      startAt,
-      endAt,
-    );
-    if (!isAvailable) {
+    const repo = manager
+      ? manager.getRepository(Booking)
+      : this.bookingRepository;
+
+    const overlappingBooking = await repo
+      .createQueryBuilder('booking')
+      .where('booking.venueId = :venueId', { venueId })
+      .andWhere('booking.startAt < :endAt', { endAt })
+      .andWhere('booking.endAt > :startAt', { startAt })
+      .getOne();
+
+    if (overlappingBooking) {
       throw new ConflictException(
         'Venue is not available for the selected time slot',
       );
     }
 
-    const booking = this.bookingRepository.create({
+    const booking = repo.create({
       venueId,
       matchId,
       startAt,
       endAt,
     });
 
-    return this.bookingRepository.save(booking);
+    return repo.save(booking);
   }
 }
