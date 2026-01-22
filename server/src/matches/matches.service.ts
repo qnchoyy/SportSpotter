@@ -14,12 +14,18 @@ import { SportType } from 'src/common/enums/sport-type.enum';
 import { MatchQueryDto } from './dto/match-query.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
 import { MatchStatus } from 'src/common/enums/match-status.enum';
+import { Venue } from 'src/venues/entities/venue.entity';
+import { BookingsService } from 'src/bookings/bookings.service';
+import { timeToMinutes } from 'src/common/utils/time.util';
 
 @Injectable()
 export class MatchesService {
   constructor(
     @InjectRepository(Match)
     private readonly matchRepository: Repository<Match>,
+    @InjectRepository(Venue)
+    private readonly venueRepository: Repository<Venue>,
+    private readonly bookingsService: BookingsService,
   ) {}
 
   private readonly skillLevelOrder: Record<SkillLevel, number> = {
@@ -28,11 +34,9 @@ export class MatchesService {
     [SkillLevel.ADVANCED]: 3,
   };
 
-  async createMatch(
-    organizer: User,
-    createMatchDto: CreateMatchDto,
-  ): Promise<Match> {
-    const { minSkillLevel, maxSkillLevel } = createMatchDto;
+  async createMatch(organizer: User, dto: CreateMatchDto): Promise<Match> {
+    const { minSkillLevel, maxSkillLevel, sport, venueId, date, startTime } =
+      dto;
 
     if (
       this.skillLevelOrder[minSkillLevel] > this.skillLevelOrder[maxSkillLevel]
@@ -43,30 +47,72 @@ export class MatchesService {
     }
 
     let playersPerTeam: number;
+    if (sport === SportType.FOOTBALL) playersPerTeam = 6;
+    else if (sport === SportType.TENNIS) playersPerTeam = 1;
+    else throw new BadRequestException('Unsupported sport');
 
-    if (createMatchDto.sport === SportType.FOOTBALL) {
-      playersPerTeam = 6;
-    } else if (createMatchDto.sport === SportType.TENNIS) {
-      playersPerTeam = 1;
-    } else {
-      throw new BadRequestException('Unsupported sport');
+    const venue = await this.venueRepository.findOne({
+      where: { id: venueId },
+    });
+    if (!venue) {
+      throw new NotFoundException(`Venue with ID ${venueId} not found`);
     }
 
-    const { sport, startTime, locationName, locationAddress } = createMatchDto;
+    if (venue.sportType !== sport) {
+      throw new BadRequestException(
+        'Selected venue does not support this sport',
+      );
+    }
+
+    const open = timeToMinutes(venue.openingTime);
+    const close = timeToMinutes(venue.closingTime);
+    const startMin = timeToMinutes(startTime);
+    const endMin = startMin + venue.slotDurationMinutes;
+
+    if (startMin < open || endMin > close) {
+      throw new BadRequestException(
+        'Selected time is outside venue working hours',
+      );
+    }
+
+    const startAt = new Date(`${date}T${startTime}:00`);
+    if (Number.isNaN(startAt.getTime())) {
+      throw new BadRequestException('Invalid date/startTime');
+    }
+    const endAt = new Date(
+      startAt.getTime() + venue.slotDurationMinutes * 60_000,
+    );
 
     const match = this.matchRepository.create({
       organizer,
       sport,
-      startTime: new Date(startTime),
-      locationName,
-      locationAddress,
+      startTime: startAt,
+      venueId: venue.id,
       numberOfTeams: 2,
       playersPerTeam,
       minSkillLevel,
       maxSkillLevel,
     });
 
-    return this.matchRepository.save(match);
+    const saved = await this.matchRepository.save(match);
+
+    await this.bookingsService.createBookingForMatch({
+      venueId: venue.id,
+      matchId: saved.id,
+      startAt,
+      endAt,
+    });
+
+    const result = await this.matchRepository.findOne({
+      where: { id: saved.id },
+      relations: ['organizer', 'venue'],
+    });
+
+    if (!result) {
+      throw new NotFoundException(`Match with ID ${saved.id} not found`);
+    }
+
+    return result;
   }
 
   async findAll(query: MatchQueryDto): Promise<Match[]> {
@@ -82,7 +128,7 @@ export class MatchesService {
 
     return await this.matchRepository.find({
       where,
-      relations: ['organizer'],
+      relations: ['organizer', 'venue'],
       order: {
         createdAt: 'DESC',
       },
@@ -92,7 +138,7 @@ export class MatchesService {
   async findOneById(id: string): Promise<Match> {
     const match = await this.matchRepository.findOne({
       where: { id },
-      relations: ['organizer'],
+      relations: ['organizer', 'venue'],
     });
 
     if (!match) {
@@ -140,11 +186,13 @@ export class MatchesService {
       );
     }
 
-    Object.assign(match, updateMatchDto);
-
     if (updateMatchDto.startTime) {
-      match.startTime = new Date(updateMatchDto.startTime);
+      throw new BadRequestException(
+        'Rescheduling startTime is not supported yet',
+      );
     }
+
+    Object.assign(match, updateMatchDto);
 
     return await this.matchRepository.save(match);
   }

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Booking } from './entities/booking.entity';
 import { Repository } from 'typeorm';
@@ -49,5 +53,34 @@ export class BookingsService {
       .andWhere('booking.startAt < :endOfDay', { endOfDay })
       .andWhere('booking.endAt > :startOfDay', { startOfDay })
       .getMany();
+  }
+
+  async createBookingForMatch(params: {
+    venueId: string;
+    matchId: string;
+    startAt: Date;
+    endAt: Date;
+  }): Promise<Booking> {
+    const { venueId, matchId, startAt, endAt } = params;
+
+    const isAvailable = await this.checkVenueAvailability(
+      venueId,
+      startAt,
+      endAt,
+    );
+    if (!isAvailable) {
+      throw new ConflictException(
+        'Venue is not available for the selected time slot',
+      );
+    }
+
+    const booking = this.bookingRepository.create({
+      venueId,
+      matchId,
+      startAt,
+      endAt,
+    });
+
+    return this.bookingRepository.save(booking);
   }
 }
