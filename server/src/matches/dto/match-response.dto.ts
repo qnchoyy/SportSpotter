@@ -3,6 +3,7 @@ import { SkillLevel } from 'src/common/enums/skill-level.enum';
 import { SportType } from 'src/common/enums/sport-type.enum';
 import { MatchStatus } from 'src/common/enums/match-status.enum';
 import { OrganizerResponseDto } from './organizer-response.dto';
+import { VenueResponseDto } from 'src/venues/dto/venue-response.dto';
 
 @Exclude()
 export class MatchResponseDto {
@@ -19,10 +20,8 @@ export class MatchResponseDto {
   startTime: Date;
 
   @Expose()
-  locationName?: string;
-
-  @Expose()
-  locationAddress?: string;
+  @Type(() => VenueResponseDto)
+  venue: VenueResponseDto;
 
   @Expose()
   numberOfTeams: number;

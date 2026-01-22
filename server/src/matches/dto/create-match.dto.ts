@@ -1,4 +1,10 @@
-import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsString,
+  IsUUID,
+  Matches,
+} from 'class-validator';
 import { SkillLevel } from 'src/common/enums/skill-level.enum';
 import { SportType } from 'src/common/enums/sport-type.enum';
 
@@ -6,7 +12,14 @@ export class CreateMatchDto {
   @IsEnum(SportType, { message: 'Sport must be one of: football, tennis' })
   sport: SportType;
 
-  @IsDateString()
+  @IsUUID()
+  venueId: string;
+
+  @IsDateString({}, { message: 'date must be a valid ISO date (YYYY-MM-DD)' })
+  date: string;
+
+  @IsString()
+  @Matches(/^\d{2}:\d{2}$/, { message: 'startTime must be in HH:mm format' })
   startTime: string;
 
   @IsEnum(SkillLevel, {
@@ -18,12 +31,4 @@ export class CreateMatchDto {
     message: 'Max skill level must be one of: beginner, intermediate, advanced',
   })
   maxSkillLevel: SkillLevel;
-
-  @IsOptional()
-  @IsString()
-  locationName?: string;
-
-  @IsOptional()
-  @IsString()
-  locationAddress?: string;
 }

@@ -3,10 +3,12 @@ import { SkillLevel } from 'src/common/enums/skill-level.enum';
 import { SportType } from 'src/common/enums/sport-type.enum';
 import { Participation } from 'src/participation/entities/participation.entity';
 import { User } from 'src/users/entities/user.entity';
+import { Venue } from 'src/venues/entities/venue.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -33,11 +35,12 @@ export class Match {
   @Column({ type: 'timestamptz' })
   startTime: Date;
 
-  @Column({ nullable: true })
-  locationName?: string;
+  @Column({ name: 'venue_id', type: 'uuid' })
+  venueId: string;
 
-  @Column({ nullable: true })
-  locationAddress?: string;
+  @ManyToOne(() => Venue, { eager: false, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'venue_id' })
+  venue: Venue;
 
   @Column({ type: 'int', default: 2 })
   numberOfTeams: number;
