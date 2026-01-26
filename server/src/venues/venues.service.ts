@@ -10,12 +10,12 @@ import { VenueQueryDto } from './dto/venue-query.dto';
 import { BookingsService } from 'src/bookings/bookings.service';
 import { VenueSlotResponseDto } from './dto/venue-slot-response.dto';
 import {
-  dateToMinutes,
   generateSlots,
   minutesToTime,
   overlapsMinutes,
 } from 'src/common/utils/time.util';
 import { VenueSlotStatus } from 'src/common/enums/venue-slot-status.enum';
+import { utcDateToLocalMinutes } from 'src/common/utils/timezone.util';
 
 @Injectable()
 export class VenuesService {
@@ -62,16 +62,9 @@ export class VenuesService {
   ): Promise<VenueSlotResponseDto[]> {
     const venue = await this.findOneById(venueId);
 
-    const date = new Date(`${dateString}T00:00:00`);
-    if (Number.isNaN(date.getTime())) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
       throw new BadRequestException('Invalid date format. Expected YYYY-MM-DD');
     }
-
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
 
     const slots = generateSlots(
       venue.openingTime,
@@ -81,16 +74,13 @@ export class VenuesService {
 
     const bookings = await this.bookingsService.getBookingsForVenueAndDate(
       venueId,
-      date,
+      dateString,
     );
 
     return slots.map((slot) => {
       const isOccupied = bookings.some((booking) => {
-        const bookingStartMinutes =
-          booking.startAt < startOfDay ? 0 : dateToMinutes(booking.startAt);
-
-        const bookingEndMinutes =
-          booking.endAt > endOfDay ? 24 * 60 : dateToMinutes(booking.endAt);
+        const bookingStartMinutes = utcDateToLocalMinutes(booking.startAt);
+        const bookingEndMinutes = utcDateToLocalMinutes(booking.endAt);
 
         return overlapsMinutes(slot, bookingStartMinutes, bookingEndMinutes);
       });

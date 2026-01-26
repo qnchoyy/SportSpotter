@@ -17,13 +17,6 @@ export function minutesToTime(totalMinutes: number): string {
     .padStart(2, '0')}`;
 }
 
-/**
- * Generate all time slots between opening and closing time
- * @param openingTime - Opening time (e.g., '11:00:00' or '11:00')
- * @param closingTime - Closing time (e.g., '21:00:00' or '21:00')
- * @param durationMinutes - Duration of each slot in minutes (e.g., 60)
- * @returns Array of time slots
- */
 export function generateSlots(
   openingTime: string,
   closingTime: string,
@@ -59,6 +52,18 @@ export function overlapsMinutes(
   );
 }
 
-export function dateToMinutes(date: Date): number {
-  return date.getHours() * 60 + date.getMinutes();
+export function isValidSlotTime(
+  timeString: string,
+  openingTime: string,
+  slotDurationMinutes: number,
+): boolean {
+  const startMin = timeToMinutes(timeString);
+  const openMin = timeToMinutes(openingTime);
+  const offset = startMin - openMin;
+
+  if (offset < 0) {
+    return false;
+  }
+
+  return offset % slotDurationMinutes === 0;
 }

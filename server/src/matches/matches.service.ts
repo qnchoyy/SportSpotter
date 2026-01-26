@@ -16,7 +16,8 @@ import { UpdateMatchDto } from './dto/update-match.dto';
 import { MatchStatus } from 'src/common/enums/match-status.enum';
 import { Venue } from 'src/venues/entities/venue.entity';
 import { BookingsService } from 'src/bookings/bookings.service';
-import { timeToMinutes } from 'src/common/utils/time.util';
+import { isValidSlotTime, timeToMinutes } from 'src/common/utils/time.util';
+import { localTimeToUTC } from 'src/common/utils/timezone.util';
 
 @Injectable()
 export class MatchesService {
@@ -70,13 +71,21 @@ export class MatchesService {
     const startMin = timeToMinutes(startTime);
     const endMin = startMin + venue.slotDurationMinutes;
 
+    if (
+      !isValidSlotTime(startTime, venue.openingTime, venue.slotDurationMinutes)
+    ) {
+      throw new BadRequestException(
+        'Start time must be aligned with venue time slots',
+      );
+    }
+
     if (startMin < open || endMin > close) {
       throw new BadRequestException(
         'Selected time is outside venue working hours',
       );
     }
 
-    const startAt = new Date(`${date}T${startTime}:00`);
+    const startAt = localTimeToUTC(date, startTime);
     if (Number.isNaN(startAt.getTime())) {
       throw new BadRequestException('Invalid date/startTime');
     }

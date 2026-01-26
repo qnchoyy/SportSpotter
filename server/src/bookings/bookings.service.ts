@@ -2,56 +2,39 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Booking } from './entities/booking.entity';
 import { EntityManager, Repository } from 'typeorm';
+import { Venue } from 'src/venues/entities/venue.entity';
+import {
+  getLocalDayBoundsUtc,
+  isSlotAlignedLocal,
+  utcDateToLocalMinutes,
+} from 'src/common/utils/timezone.util';
+import { timeToMinutes } from 'src/common/utils/time.util';
 
 @Injectable()
 export class BookingsService {
   constructor(
     @InjectRepository(Booking)
     private readonly bookingRepository: Repository<Booking>,
+    @InjectRepository(Venue)
+    private readonly venueRepository: Repository<Venue>,
   ) {}
-
-  async checkVenueAvailability(
-    venueId: string,
-    startAt: Date,
-    endAt: Date,
-  ): Promise<boolean> {
-    if (startAt >= endAt) {
-      throw new BadRequestException('startAt must be before endAt');
-    }
-
-    const overlappingBooking = await this.bookingRepository
-      .createQueryBuilder('booking')
-      .where('booking.venueId = :venueId', { venueId })
-      .andWhere('booking.startAt < :endAt', { endAt })
-      .andWhere('booking.endAt > :startAt', { startAt })
-      .getOne();
-
-    const isAvailable = !overlappingBooking;
-
-    return isAvailable;
-  }
 
   async getBookingsForVenueAndDate(
     venueId: string,
-    date: Date,
+    dateString: string,
   ): Promise<Booking[]> {
-    // Start of day (00:00:00.000)
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    // End of day (23:59:59.999)
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    const { startUtc, endUtc } = getLocalDayBoundsUtc(dateString);
 
     return this.bookingRepository
       .createQueryBuilder('booking')
       .where('booking.venueId = :venueId', { venueId })
-      .andWhere('booking.startAt < :endOfDay', { endOfDay })
-      .andWhere('booking.endAt > :startOfDay', { startOfDay })
+      .andWhere('booking.startAt < :endUtc', { endUtc })
+      .andWhere('booking.endAt > :startUtc', { startUtc })
       .getMany();
   }
 
@@ -66,11 +49,58 @@ export class BookingsService {
   ): Promise<Booking> {
     const { venueId, matchId, startAt, endAt } = params;
 
-    const repo = manager
+    const bookingRepo = manager
       ? manager.getRepository(Booking)
       : this.bookingRepository;
 
-    const overlappingBooking = await repo
+    const venueRepo = manager
+      ? manager.getRepository(Venue)
+      : this.venueRepository;
+
+    const venue = await venueRepo.findOne({ where: { id: venueId } });
+    if (!venue) {
+      throw new NotFoundException(`Venue with ID ${venueId} not found`);
+    }
+
+    if (startAt >= endAt) {
+      throw new BadRequestException('startAt must be before endAt');
+    }
+
+    const expectedMs = venue.slotDurationMinutes * 60_000;
+    if (endAt.getTime() - startAt.getTime() !== expectedMs) {
+      throw new BadRequestException(
+        `Booking duration must be exactly ${venue.slotDurationMinutes} minutes`,
+      );
+    }
+
+    const openMin = timeToMinutes(venue.openingTime);
+    const closeMin = timeToMinutes(venue.closingTime);
+
+    if (
+      !isSlotAlignedLocal(startAt, venue.openingTime, venue.slotDurationMinutes)
+    ) {
+      throw new BadRequestException(
+        'startAt must be aligned to venue slot boundaries',
+      );
+    }
+    if (
+      !isSlotAlignedLocal(endAt, venue.openingTime, venue.slotDurationMinutes)
+    ) {
+      throw new BadRequestException(
+        'endAt must be aligned to venue slot boundaries',
+      );
+    }
+
+    const startMin = utcDateToLocalMinutes(startAt);
+    const endMin = utcDateToLocalMinutes(endAt);
+
+    if (startMin < openMin || endMin > closeMin) {
+      throw new BadRequestException(
+        'Selected time is outside venue working hours',
+      );
+    }
+
+    const overlappingBooking = await bookingRepo
       .createQueryBuilder('booking')
       .where('booking.venueId = :venueId', { venueId })
       .andWhere('booking.startAt < :endAt', { endAt })
@@ -83,13 +113,13 @@ export class BookingsService {
       );
     }
 
-    const booking = repo.create({
+    const booking = bookingRepo.create({
       venueId,
       matchId,
       startAt,
       endAt,
     });
 
-    return repo.save(booking);
+    return bookingRepo.save(booking);
   }
 }
