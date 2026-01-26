@@ -22,6 +22,15 @@ export class VenueResponseDto {
   capacityPlayers: number;
 
   @Expose()
+  openingTime: string;
+
+  @Expose()
+  closingTime: string;
+
+  @Expose()
+  slotDurationMinutes: number;
+
+  @Expose()
   latitude: number;
 
   @Expose()
