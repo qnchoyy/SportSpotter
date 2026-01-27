@@ -4,6 +4,7 @@ import { SportType } from 'src/common/enums/sport-type.enum';
 import { MatchStatus } from 'src/common/enums/match-status.enum';
 import { OrganizerResponseDto } from './organizer-response.dto';
 import { VenueResponseDto } from 'src/venues/dto/venue-response.dto';
+import { TennisFormat } from 'src/common/enums/tennis-format.enum';
 
 @Exclude()
 export class MatchResponseDto {
@@ -34,6 +35,9 @@ export class MatchResponseDto {
 
   @Expose()
   maxSkillLevel: SkillLevel;
+
+  @Expose()
+  tennisFormat?: TennisFormat;
 
   @Expose()
   @Type(() => OrganizerResponseDto)

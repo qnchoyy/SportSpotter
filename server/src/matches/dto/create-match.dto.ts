@@ -1,12 +1,14 @@
 import {
   IsDateString,
   IsEnum,
+  IsOptional,
   IsString,
   IsUUID,
   Matches,
 } from 'class-validator';
 import { SkillLevel } from 'src/common/enums/skill-level.enum';
 import { SportType } from 'src/common/enums/sport-type.enum';
+import { TennisFormat } from 'src/common/enums/tennis-format.enum';
 
 export class CreateMatchDto {
   @IsEnum(SportType, { message: 'Sport must be one of: football, tennis' })
@@ -31,4 +33,10 @@ export class CreateMatchDto {
     message: 'Max skill level must be one of: beginner, intermediate, advanced',
   })
   maxSkillLevel: SkillLevel;
+
+  @IsOptional()
+  @IsEnum(TennisFormat, {
+    message: 'Tennis format must be one of: singles, doubles',
+  })
+  tennisFormat?: TennisFormat;
 }

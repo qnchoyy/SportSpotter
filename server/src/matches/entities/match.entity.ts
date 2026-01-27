@@ -1,6 +1,7 @@
 import { MatchStatus } from 'src/common/enums/match-status.enum';
 import { SkillLevel } from 'src/common/enums/skill-level.enum';
 import { SportType } from 'src/common/enums/sport-type.enum';
+import { TennisFormat } from 'src/common/enums/tennis-format.enum';
 import { Participation } from 'src/participation/entities/participation.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Venue } from 'src/venues/entities/venue.entity';
@@ -45,7 +46,7 @@ export class Match {
   @Column({ type: 'int', default: 2 })
   numberOfTeams: number;
 
-  @Column({ type: 'int', default: 6 })
+  @Column({ type: 'int' })
   playersPerTeam: number;
 
   @Column({ type: 'enum', enum: SkillLevel })
@@ -53,6 +54,9 @@ export class Match {
 
   @Column({ type: 'enum', enum: SkillLevel })
   maxSkillLevel: SkillLevel;
+
+  @Column({ type: 'enum', enum: TennisFormat, nullable: true })
+  tennisFormat?: TennisFormat;
 
   @OneToMany(() => Participation, (participation) => participation.match)
   participations: Participation[];

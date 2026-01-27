@@ -18,6 +18,7 @@ import { BookingsService } from 'src/bookings/bookings.service';
 import { isValidSlotTime, timeToMinutes } from 'src/common/utils/time.util';
 import { localTimeToUTC } from 'src/common/utils/timezone.util';
 import { MatchStatus } from 'src/common/enums/match-status.enum';
+import { TennisFormat } from 'src/common/enums/tennis-format.enum';
 
 @Injectable()
 export class MatchesService {
@@ -37,8 +38,15 @@ export class MatchesService {
   };
 
   async createMatch(organizer: User, dto: CreateMatchDto): Promise<Match> {
-    const { minSkillLevel, maxSkillLevel, sport, venueId, date, startTime } =
-      dto;
+    const {
+      minSkillLevel,
+      maxSkillLevel,
+      sport,
+      venueId,
+      date,
+      startTime,
+      tennisFormat,
+    } = dto;
 
     if (
       this.skillLevelOrder[minSkillLevel] > this.skillLevelOrder[maxSkillLevel]
@@ -47,11 +55,6 @@ export class MatchesService {
         'minSkillLevel cannot be greater than maxSkillLevel',
       );
     }
-
-    let playersPerTeam: number;
-    if (sport === SportType.FOOTBALL) playersPerTeam = 6;
-    else if (sport === SportType.TENNIS) playersPerTeam = 1;
-    else throw new BadRequestException('Unsupported sport');
 
     const venue = await this.venueRepository.findOne({
       where: { id: venueId },
@@ -64,6 +67,46 @@ export class MatchesService {
       throw new BadRequestException(
         'Selected venue does not support this sport',
       );
+    }
+
+    const numberOfTeams = 2;
+    let playersPerTeam: number;
+    let matchTennisFormat: TennisFormat | null = null;
+
+    if (sport === SportType.FOOTBALL) {
+      if (tennisFormat) {
+        throw new BadRequestException(
+          'tennisFormat can only be provided for tennis matches',
+        );
+      }
+
+      if (venue.capacityPlayers % 2 !== 0) {
+        throw new BadRequestException(
+          'Venue capacityPlayers must be even for team sports',
+        );
+      }
+
+      playersPerTeam = venue.capacityPlayers / 2;
+    } else if (sport === SportType.TENNIS) {
+      if (!tennisFormat) {
+        throw new BadRequestException(
+          'tennisFormat is required for tennis matches',
+        );
+      }
+
+      matchTennisFormat = tennisFormat;
+
+      playersPerTeam = tennisFormat === TennisFormat.SINGLES ? 1 : 2;
+
+      const totalPlayers = numberOfTeams * playersPerTeam;
+
+      if (totalPlayers > venue.capacityPlayers) {
+        throw new BadRequestException(
+          'Selected tennis format exceeds venue capacity',
+        );
+      }
+    } else {
+      throw new BadRequestException('Unsupported sport');
     }
 
     const open = timeToMinutes(venue.openingTime);
@@ -101,8 +144,9 @@ export class MatchesService {
         sport,
         startTime: startAt,
         venueId: venue.id,
-        numberOfTeams: 2,
+        numberOfTeams,
         playersPerTeam,
+        tennisFormat: matchTennisFormat ?? undefined,
         minSkillLevel,
         maxSkillLevel,
       });
