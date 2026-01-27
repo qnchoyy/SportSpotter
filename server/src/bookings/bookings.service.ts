@@ -122,4 +122,14 @@ export class BookingsService {
 
     return bookingRepo.save(booking);
   }
+
+  async deleteBookingForMatch(
+    matchId: string,
+    manager?: EntityManager,
+  ): Promise<void> {
+    const repo = manager
+      ? manager.getRepository(Booking)
+      : this.bookingRepository;
+    await repo.delete({ matchId });
+  }
 }

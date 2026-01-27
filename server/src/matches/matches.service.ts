@@ -17,6 +17,7 @@ import { Venue } from 'src/venues/entities/venue.entity';
 import { BookingsService } from 'src/bookings/bookings.service';
 import { isValidSlotTime, timeToMinutes } from 'src/common/utils/time.util';
 import { localTimeToUTC } from 'src/common/utils/timezone.util';
+import { MatchStatus } from 'src/common/enums/match-status.enum';
 
 @Injectable()
 export class MatchesService {
@@ -191,5 +192,57 @@ export class MatchesService {
     Object.assign(match, updateMatchDto);
 
     return await this.matchRepository.save(match);
+  }
+
+  async cancelMatch(matchId: string, organizer: User): Promise<Match> {
+    const match = await this.matchRepository.findOne({
+      where: { id: matchId },
+      relations: ['organizer', 'venue'],
+    });
+
+    if (!match) {
+      throw new NotFoundException(`Match with ID ${matchId} not found`);
+    }
+
+    if (match.organizer.id !== organizer.id) {
+      throw new ForbiddenException('You can only cancel your own matches.');
+    }
+
+    if (match.status === MatchStatus.COMPLETED) {
+      throw new BadRequestException('Completed match cannot be cancelled');
+    }
+
+    if (match.status === MatchStatus.CANCELED) {
+      throw new BadRequestException('Match is already cancelled');
+    }
+
+    const hoursUntilMatch =
+      (match.startTime.getTime() - Date.now()) / (1000 * 60 * 60);
+
+    if (hoursUntilMatch < 24) {
+      throw new BadRequestException(
+        'Cannot cancel match less than 24 hours before start time',
+      );
+    }
+
+    return this.dataSource.transaction(async (manager) => {
+      const matchRepo = manager.getRepository(Match);
+
+      match.status = MatchStatus.CANCELED;
+      const saved = await matchRepo.save(match);
+
+      await this.bookingsService.deleteBookingForMatch(saved.id, manager);
+
+      const result = await matchRepo.findOne({
+        where: { id: saved.id },
+        relations: ['organizer', 'venue'],
+      });
+
+      if (!result) {
+        throw new NotFoundException(`Match with ID ${saved.id} not found`);
+      }
+
+      return result;
+    });
   }
 }

@@ -92,6 +92,19 @@ export class MatchesController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post(':id/cancel')
+  async cancelMatch(
+    @Param('id', ParseUUIDPipe) id: string,
+    @GetUser() user: User,
+  ): Promise<MatchResponseDto> {
+    const match = await this.matchesService.cancelMatch(id, user);
+
+    return plainToInstance(MatchResponseDto, match, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post(':matchId/join')
   async joinMatch(
     @Param('matchId', ParseUUIDPipe) matchId: string,
