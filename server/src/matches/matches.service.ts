@@ -13,7 +13,6 @@ import { SkillLevel } from 'src/common/enums/skill-level.enum';
 import { SportType } from 'src/common/enums/sport-type.enum';
 import { MatchQueryDto } from './dto/match-query.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
-import { MatchStatus } from 'src/common/enums/match-status.enum';
 import { Venue } from 'src/venues/entities/venue.entity';
 import { BookingsService } from 'src/bookings/bookings.service';
 import { isValidSlotTime, timeToMinutes } from 'src/common/utils/time.util';
@@ -178,15 +177,6 @@ export class MatchesService {
       throw new ForbiddenException('You can only update your own matches');
     }
 
-    if (
-      updateMatchDto.status &&
-      updateMatchDto.status !== MatchStatus.CANCELED
-    ) {
-      throw new BadRequestException(
-        'You can only cancel a match. Other status changes are automatic.',
-      );
-    }
-
     const minSkillLevel = updateMatchDto.minSkillLevel ?? match.minSkillLevel;
     const maxSkillLevel = updateMatchDto.maxSkillLevel ?? match.maxSkillLevel;
 
@@ -195,12 +185,6 @@ export class MatchesService {
     ) {
       throw new BadRequestException(
         'minSkillLevel cannot be greater than maxSkillLevel',
-      );
-    }
-
-    if (updateMatchDto.startTime) {
-      throw new BadRequestException(
-        'Rescheduling startTime is not supported yet',
       );
     }
 
