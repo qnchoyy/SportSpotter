@@ -21,10 +21,11 @@ export class Match {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, {
-    eager: true,
-    onDelete: 'CASCADE',
-  })
+  @Column({ name: 'organizer_id', type: 'uuid', nullable: false })
+  organizerId: string;
+
+  @ManyToOne(() => User, { eager: false, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'organizer_id' })
   organizer: User;
 
   @Column({ type: 'enum', enum: MatchStatus, default: MatchStatus.OPEN })

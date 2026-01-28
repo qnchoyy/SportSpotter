@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Participation } from './entities/participation.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Match } from 'src/matches/entities/match.entity';
 import { UserSkillService } from 'src/user-skill/user-skill.service';
 import { Team } from 'src/common/enums/team.enum';
@@ -23,6 +23,8 @@ export class ParticipationService {
     private readonly matchRepository: Repository<Match>,
 
     private readonly userSkillService: UserSkillService,
+
+    private readonly dataSource: DataSource,
   ) {}
 
   async joinMatch(
@@ -30,96 +32,127 @@ export class ParticipationService {
     matchId: string,
     team: Team,
   ): Promise<Participation> {
-    const match = await this.matchRepository.findOne({
-      where: { id: matchId },
-    });
+    return this.dataSource.transaction(async (manager) => {
+      const matchRepo = manager.getRepository(Match);
+      const participationRepo = manager.getRepository(Participation);
 
-    if (!match) {
-      throw new NotFoundException(`Match with ID ${matchId} not found. `);
-    }
+      const match = await matchRepo.findOne({
+        where: { id: matchId },
+        lock: { mode: 'pessimistic_write' },
+      });
 
-    if (match.status !== MatchStatus.OPEN) {
-      throw new BadRequestException(
-        `Cannot join match with status ${match.status}`,
-      );
-    }
+      if (!match) {
+        throw new NotFoundException(`Match with ID ${matchId} not found.`);
+      }
 
-    const alreadyJoined = await this.participationRepository.exists({
-      where: { userId, matchId },
-    });
+      if (match.status !== MatchStatus.OPEN) {
+        throw new BadRequestException(
+          `Cannot join match with status ${match.status}`,
+        );
+      }
 
-    if (alreadyJoined) {
-      throw new ConflictException(
-        'You are already participating in this match',
-      );
-    }
+      const alreadyJoined = await participationRepo.exists({
+        where: { userId, matchId },
+      });
 
-    const meetsSkillRequirements =
-      await this.userSkillService.meetsSkillRequirements(
-        userId,
-        match.sport,
-        match.minSkillLevel,
-        match.maxSkillLevel,
-      );
-
-    if (!meetsSkillRequirements) {
-      throw new ForbiddenException(
-        'Your skill level does not meet the match requirements',
-      );
-    }
-
-    const capacity = match.numberOfTeams * match.playersPerTeam;
-
-    const currentParticipants = await this.participationRepository.count({
-      where: { matchId },
-    });
-
-    if (currentParticipants >= capacity) {
-      throw new ConflictException('This match is full');
-    }
-
-    const participation = this.participationRepository.create({
-      userId,
-      matchId,
-      team,
-    });
-
-    try {
-      return await this.participationRepository.save(participation);
-    } catch (e: any) {
-      if (e?.code === '23505') {
+      if (alreadyJoined) {
         throw new ConflictException(
           'You are already participating in this match',
         );
       }
-      throw e;
-    }
+
+      const meetsSkillRequirements =
+        await this.userSkillService.meetsSkillRequirements(
+          userId,
+          match.sport,
+          match.minSkillLevel,
+          match.maxSkillLevel,
+        );
+
+      if (!meetsSkillRequirements) {
+        throw new ForbiddenException(
+          'Your skill level does not meet the match requirements',
+        );
+      }
+
+      const currentParticipants = await participationRepo.count({
+        where: { matchId },
+      });
+      const capacity = match.numberOfTeams * match.playersPerTeam;
+
+      if (currentParticipants >= capacity) {
+        throw new ConflictException('This match is full');
+      }
+
+      const participation = participationRepo.create({ userId, matchId, team });
+
+      let saved: Participation;
+      try {
+        saved = await participationRepo.save(participation);
+      } catch (e: any) {
+        if (e?.code === '23505') {
+          throw new ConflictException(
+            'You are already participating in this match',
+          );
+        }
+        throw e;
+      }
+
+      const newCount = currentParticipants + 1;
+      const newStatus =
+        newCount >= capacity ? MatchStatus.FULL : MatchStatus.OPEN;
+
+      if (match.status !== newStatus) {
+        await matchRepo.update({ id: matchId }, { status: newStatus });
+      }
+
+      return saved;
+    });
   }
 
   async leaveMatch(userId: string, matchId: string): Promise<void> {
-    const match = await this.matchRepository.findOne({
-      where: { id: matchId },
+    return this.dataSource.transaction(async (manager) => {
+      const matchRepo = manager.getRepository(Match);
+      const participationRepo = manager.getRepository(Participation);
+
+      const match = await matchRepo.findOne({
+        where: { id: matchId },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!match) {
+        throw new NotFoundException(`Match with ID ${matchId} not found.`);
+      }
+
+      if (
+        match.status === MatchStatus.CANCELED ||
+        match.status === MatchStatus.COMPLETED
+      ) {
+        throw new BadRequestException(
+          `Cannot leave match with status ${match.status}`,
+        );
+      }
+
+      const participation = await participationRepo.findOne({
+        where: { userId, matchId },
+      });
+
+      if (!participation) {
+        throw new NotFoundException('You are not participating in this match');
+      }
+
+      await participationRepo.delete({ userId, matchId });
+
+      const capacity = match.numberOfTeams * match.playersPerTeam;
+      const newCount = await participationRepo.count({ where: { matchId } });
+
+      const newStatus =
+        newCount >= capacity ? MatchStatus.FULL : MatchStatus.OPEN;
+
+      if (match.status !== newStatus) {
+        await matchRepo.update({ id: matchId }, { status: newStatus });
+      }
     });
-
-    if (!match) {
-      throw new NotFoundException(`Match with ID ${matchId} not found.`);
-    }
-
-    if (match.status !== MatchStatus.OPEN) {
-      throw new BadRequestException(
-        `Cannot leave match with status ${match.status}`,
-      );
-    }
-
-    const participation = await this.participationRepository.findOne({
-      where: { userId, matchId },
-    });
-
-    if (!participation) {
-      throw new NotFoundException('You are not participating in this match');
-    }
-
-    await this.participationRepository.delete({ userId, matchId });
   }
 
   async removeParticipant(
@@ -127,42 +160,69 @@ export class ParticipationService {
     matchId: string,
     participantUserId: string,
   ): Promise<void> {
-    const match = await this.matchRepository.findOne({
-      where: { id: matchId },
-      relations: ['organizer'],
-    });
+    return this.dataSource.transaction(async (manager) => {
+      const matchRepo = manager.getRepository(Match);
+      const participationRepo = manager.getRepository(Participation);
 
-    if (!match) {
-      throw new NotFoundException(`Match with ID ${matchId} not found.`);
-    }
+      const match = await matchRepo.findOne({
+        where: { id: matchId },
+        select: [
+          'id',
+          'status',
+          'organizerId',
+          'numberOfTeams',
+          'playersPerTeam',
+        ],
+        lock: { mode: 'pessimistic_write' },
+      });
 
-    if (match.status !== MatchStatus.OPEN) {
-      throw new BadRequestException(
-        `Cannot remove participants from match with status ${match.status}`,
-      );
-    }
+      if (!match) {
+        throw new NotFoundException(`Match with ID ${matchId} not found.`);
+      }
 
-    if (match.organizer.id !== organizerId) {
-      throw new ForbiddenException('Only the organizer can kick participants');
-    }
+      if (
+        match.status === MatchStatus.CANCELED ||
+        match.status === MatchStatus.COMPLETED
+      ) {
+        throw new BadRequestException(
+          `Cannot remove participants from match with status ${match.status}`,
+        );
+      }
 
-    if (participantUserId === organizerId) {
-      throw new BadRequestException(
-        'Organizer cannot remove themselves from the match',
-      );
-    }
+      if (match.organizerId !== organizerId) {
+        throw new ForbiddenException(
+          'Only the organizer can kick participants',
+        );
+      }
 
-    const participation = await this.participationRepository.findOne({
-      where: { userId: participantUserId, matchId },
-    });
+      if (participantUserId === organizerId) {
+        throw new BadRequestException(
+          'Organizer cannot remove themselves from the match',
+        );
+      }
 
-    if (!participation) {
-      throw new NotFoundException('User is not participating in this match');
-    }
+      const participation = await participationRepo.findOne({
+        where: { userId: participantUserId, matchId },
+      });
 
-    await this.participationRepository.delete({
-      userId: participantUserId,
-      matchId,
+      if (!participation) {
+        throw new NotFoundException('User is not participating in this match');
+      }
+
+      await participationRepo.delete({
+        userId: participantUserId,
+        matchId,
+      });
+
+      const capacity = match.numberOfTeams * match.playersPerTeam;
+      const newCount = await participationRepo.count({ where: { matchId } });
+
+      const newStatus =
+        newCount >= capacity ? MatchStatus.FULL : MatchStatus.OPEN;
+
+      if (match.status !== newStatus) {
+        await matchRepo.update({ id: matchId }, { status: newStatus });
+      }
     });
   }
 
