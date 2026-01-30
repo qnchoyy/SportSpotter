@@ -51,6 +51,12 @@ export class ParticipationService {
         );
       }
 
+      if (match.startTime <= new Date()) {
+        throw new BadRequestException(
+          'Cannot join match that has already started',
+        );
+      }
+
       const alreadyJoined = await participationRepo.exists({
         where: { userId, matchId },
       });

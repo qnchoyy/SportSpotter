@@ -57,13 +57,17 @@ export class BookingsService {
       ? manager.getRepository(Venue)
       : this.venueRepository;
 
+    if (startAt >= endAt) {
+      throw new BadRequestException('startAt must be before endAt');
+    }
+
+    if (startAt <= new Date()) {
+      throw new BadRequestException('startAt must be in the future');
+    }
+
     const venue = await venueRepo.findOne({ where: { id: venueId } });
     if (!venue) {
       throw new NotFoundException(`Venue with ID ${venueId} not found`);
-    }
-
-    if (startAt >= endAt) {
-      throw new BadRequestException('startAt must be before endAt');
     }
 
     const expectedMs = venue.slotDurationMinutes * 60_000;

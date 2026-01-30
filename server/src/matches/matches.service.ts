@@ -136,6 +136,10 @@ export class MatchesService {
       startAt.getTime() + venue.slotDurationMinutes * 60_000,
     );
 
+    if (startAt <= new Date()) {
+      throw new BadRequestException('Cannot create match in the past');
+    }
+
     return this.dataSource.transaction(async (manager) => {
       const matchRepo = manager.getRepository(Match);
 
