@@ -10,6 +10,7 @@ import { MatchesModule } from './matches/matches.module';
 import { ParticipationModule } from './participation/participation.module';
 import { VenuesModule } from './venues/venues.module';
 import { BookingsModule } from './bookings/bookings.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { BookingsModule } from './bookings/bookings.module';
       useFactory: (configService: ConfigService) =>
         getDatabaseConfig(configService),
     }),
+    ScheduleModule.forRoot(),
     HealthModule,
     UsersModule,
     UserSkillModule,

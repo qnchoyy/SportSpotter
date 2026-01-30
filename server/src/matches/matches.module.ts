@@ -6,6 +6,7 @@ import { Match } from './entities/match.entity';
 import { ParticipationModule } from 'src/participation/participation.module';
 import { BookingsModule } from 'src/bookings/bookings.module';
 import { Venue } from 'src/venues/entities/venue.entity';
+import { MatchStatusScheduler } from './match-status.scheduler';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { Venue } from 'src/venues/entities/venue.entity';
     BookingsModule,
   ],
   controllers: [MatchesController],
-  providers: [MatchesService],
+  providers: [MatchesService, MatchStatusScheduler],
 })
 export class MatchesModule {}
