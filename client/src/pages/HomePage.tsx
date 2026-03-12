@@ -1,10 +1,14 @@
+import FeaturedMatches from "../components/home/FeaturedMatches";
+import HeroSection from "../components/home/HeroSection";
+import HowItWorks from "../components/home/HowItWorks";
+
 const HomePage = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">Home Page</h1>
-      </div>
-    </div>
+    <>
+      <HeroSection />
+      <HowItWorks />
+      <FeaturedMatches />
+    </>
   );
 };
 
