@@ -1,32 +1,23 @@
-import { useEffect, useState } from "react";
 import MatchCard from "../components/matches/MatchCard";
-import { matchesService } from "../services/matches";
-import type { Match } from "../types/match";
+import { useMatches } from "../hooks/useMatches";
 
 const MatchesPage = () => {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        const data = await matchesService.getMatches();
-        setMatches(data);
-      } catch (error) {
-        console.error("Failed to load matches", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMatches();
-  }, []);
+  const { matches, loading, error } = useMatches();
 
   if (loading) {
     return (
       <div className="py-10">
         <h1 className="text-3xl font-bold">All Matches</h1>
         <p className="mt-6 text-white/70">Loading matches...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-10">
+        <h1 className="text-3xl font-bold">All Matches</h1>
+        <p className="mt-6 text-red-400">{error}</p>
       </div>
     );
   }

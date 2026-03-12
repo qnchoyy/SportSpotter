@@ -1,25 +1,14 @@
-import { useEffect, useState } from "react";
 import MatchCard from "../matches/MatchCard";
-import { matchesService } from "../../services/matches";
-import type { Match } from "../../types/match";
+import { useMatches } from "../../hooks/useMatches";
 
 const FeaturedMatches = () => {
-  const [matches, setMatches] = useState<Match[]>([]);
+  const { matches, loading, error } = useMatches();
 
-  useEffect(() => {
-    const fetchMatches = async () => {
-      try {
-        const data = await matchesService.getMatches();
-        setMatches(data.slice(0, 3));
-      } catch (error) {
-        console.error("Failed to load featured matches", error);
-      }
-    };
+  if (loading || error) return null;
 
-    fetchMatches();
-  }, []);
+  const featuredMatches = matches.slice(0, 3);
 
-  if (!matches.length) {
+  if (!featuredMatches.length) {
     return (
       <section className="py-16 text-center">
         <h2 className="text-3xl font-bold">Upcoming Matches</h2>
@@ -33,7 +22,7 @@ const FeaturedMatches = () => {
       <h2 className="text-3xl font-bold text-center">Upcoming Matches</h2>
 
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {matches.map((match) => (
+        {featuredMatches.map((match) => (
           <MatchCard
             key={match.id}
             sport={match.sport}
