@@ -1,10 +1,26 @@
 import MatchCard from "../matches/MatchCard";
 import { useMatches } from "../../hooks/useMatches";
+import Spinner from "../ui/Spinner";
 
 const FeaturedMatches = () => {
   const { matches, loading, error } = useMatches();
 
-  if (loading || error) return null;
+  if (loading) {
+    return (
+      <section className="py-16">
+        <h2 className="text-3xl font-bold text-center">Upcoming Matches</h2>
+        <Spinner size="lg" />
+      </section>
+    );
+  }
+  if (error) {
+    return (
+      <section className="py-16 text-center">
+        <h2 className="text-3xl font-bold">Upcoming Matches</h2>
+        <p className="mt-6 text-red-400">Failed to load matches.</p>
+      </section>
+    );
+  }
 
   const featuredMatches = matches.slice(0, 3);
 
