@@ -41,6 +41,7 @@ const FeaturedMatches = () => {
         {featuredMatches.map((match) => (
           <MatchCard
             key={match.id}
+            id={match.id}
             sport={match.sport}
             venueName={match.venue.name}
             city={match.venue.city}

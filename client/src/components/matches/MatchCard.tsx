@@ -1,4 +1,7 @@
+import { Link } from "react-router-dom";
+
 type MatchCardProps = {
+  id: string;
   sport: "football" | "tennis";
   venueName: string;
   city: string;
@@ -10,6 +13,7 @@ type MatchCardProps = {
 };
 
 const MatchCard = ({
+  id,
   sport,
   venueName,
   city,
@@ -32,7 +36,10 @@ const MatchCard = ({
   });
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-900/40 p-6 transition hover:-translate-y-1 hover:border-blue-500/50">
+    <Link
+      to={`/matches/${id}`}
+      className="block rounded-xl border border-slate-700 bg-slate-900/40 p-6 transition hover:-translate-y-1 hover:border-blue-500/50"
+    >
       <div className="inline-flex items-center gap-2 rounded-full bg-slate-800 px-3 py-1 text-sm font-medium text-gray-200">
         <span>{sportIcon}</span>
         <span className="capitalize">{sport}</span>
@@ -55,7 +62,7 @@ const MatchCard = ({
       <div className="mt-4 text-sm text-gray-300">
         Max players: {maxPlayers}
       </div>
-    </div>
+    </Link>
   );
 };
 
