@@ -1,6 +1,7 @@
 export type Match = {
   id: string;
   sport: "football" | "tennis";
+  status: string;
   startTime: string;
   playersPerTeam: number;
   numberOfTeams: number;
@@ -9,5 +10,12 @@ export type Match = {
   venue: {
     name: string;
     city: string;
+    address: string;
+  };
+  organizer: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    username: string;
   };
 };
