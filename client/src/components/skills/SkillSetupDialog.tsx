@@ -1,22 +1,21 @@
 import { useState } from "react";
 import { type SportType, type SkillLevel } from "../../types/userSkill";
 import { SPORTS } from "../../constants/sports";
-import { userSkillsService } from "../../services/userSkills";
 import toast from "react-hot-toast";
+import { useCreateUserSkill } from "../../hooks/useCreateUserSkill";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onCompleted: () => void;
 };
 
-const SkillSetupDialog = ({ open, onClose, onCompleted }: Props) => {
+const SkillSetupDialog = ({ open, onClose }: Props) => {
   const [isSaving, setIsSaving] = useState(false);
-
   const [skills, setSkills] = useState<Record<SportType, SkillLevel>>({
     football: "beginner",
     tennis: "beginner",
   });
+  const mutation = useCreateUserSkill();
 
   if (!open) return null;
 
@@ -26,7 +25,7 @@ const SkillSetupDialog = ({ open, onClose, onCompleted }: Props) => {
 
       await Promise.all(
         SPORTS.map((sport) =>
-          userSkillsService.createUserSkill({
+          mutation.mutateAsync({
             sport,
             skillLevel: skills[sport],
           }),
@@ -34,8 +33,6 @@ const SkillSetupDialog = ({ open, onClose, onCompleted }: Props) => {
       );
 
       toast.success("Skills saved successfully!");
-
-      onCompleted();
       onClose();
     } catch (error) {
       console.error(error);

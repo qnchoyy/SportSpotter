@@ -7,21 +7,14 @@ import SkillSetupDialog from "../components/skills/SkillSetupDialog";
 
 const RootLayout = () => {
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
-  const [hasCompletedSkillSetup, setHasCompletedSkillSetup] = useState(false);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { skills, loading: skillsLoading } = useUserSkills();
 
   const shouldShowSkillDialog =
-    isAuthenticated &&
-    !authLoading &&
-    !skillsLoading &&
-    skills.length === 0 &&
-    !hasCompletedSkillSetup;
+    isAuthenticated && !authLoading && !skillsLoading && skills.length === 0;
 
   useEffect(() => {
-    if (shouldShowSkillDialog) {
-      setIsSkillDialogOpen(true);
-    }
+    setIsSkillDialogOpen(shouldShowSkillDialog);
   }, [shouldShowSkillDialog]);
 
   return (
@@ -34,7 +27,6 @@ const RootLayout = () => {
       <SkillSetupDialog
         open={isSkillDialogOpen}
         onClose={() => setIsSkillDialogOpen(false)}
-        onCompleted={() => setHasCompletedSkillSetup(true)}
       />
     </div>
   );
