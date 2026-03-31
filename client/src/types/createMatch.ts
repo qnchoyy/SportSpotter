@@ -1,4 +1,4 @@
-import type { SportType } from "./userSkill";
+import type { SkillLevel, SportType } from "./userSkill";
 
 export type CreateMatchFormState = {
   sport?: SportType;
@@ -6,8 +6,8 @@ export type CreateMatchFormState = {
   date?: string;
   startTime?: string;
 
-  minSkillLevel?: string;
-  maxSkillLevel?: string;
+  minSkillLevel?: SkillLevel;
+  maxSkillLevel?: SkillLevel;
 
   tennisFormat?: "singles" | "doubles";
 };
