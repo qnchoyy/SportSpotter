@@ -1,12 +1,14 @@
+import type { SkillLevel, SportType } from "./userSkill";
+
 export type Match = {
   id: string;
-  sport: "football" | "tennis";
+  sport: SportType;
   status: string;
   startTime: string;
   playersPerTeam: number;
   numberOfTeams: number;
-  minSkillLevel: string;
-  maxSkillLevel: string;
+  minSkillLevel: SkillLevel;
+  maxSkillLevel: SkillLevel;
   venue: {
     name: string;
     city: string;
@@ -18,4 +20,14 @@ export type Match = {
     lastName: string;
     username: string;
   };
+};
+
+export type CreateMatchRequest = {
+  sport: SportType;
+  venueId: string;
+  date: string;
+  startTime: string;
+  minSkillLevel: SkillLevel;
+  maxSkillLevel: SkillLevel;
+  tennisFormat?: "singles" | "doubles";
 };
