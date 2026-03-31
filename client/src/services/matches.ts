@@ -1,10 +1,10 @@
-import type { Match } from "../types/match";
+import type { CreateMatchRequest, Match } from "../types/match";
 import type { Participant } from "../types/participant";
 import { client } from "./client";
 
 export const matchesService = {
-  async getMatches() {
-    const response = await client.get("/matches");
+  async getMatches(): Promise<Match[]> {
+    const response = await client.get<Match[]>("/matches");
     return response.data;
   },
 
@@ -24,6 +24,11 @@ export const matchesService = {
     const response = await client.get<Participant[]>(
       `/matches/${matchId}/participants`,
     );
+    return response.data;
+  },
+
+  async createMatch(data: CreateMatchRequest): Promise<Match> {
+    const response = await client.post<Match>(`/matches`, data);
     return response.data;
   },
 };

@@ -6,7 +6,7 @@ import { client } from "./client";
 export const venuesService = {
   async getVenues(sport?: SportType): Promise<Venue[]> {
     const response = await client.get<Venue[]>("/venues", {
-      params: { sport },
+      params: { sportType: sport },
     });
     return response.data;
   },
