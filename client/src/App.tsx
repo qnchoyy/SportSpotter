@@ -5,6 +5,7 @@ import RootLayout from "./layouts/RootLayout";
 import RegisterPage from "./pages/RegisterPage";
 import MatchesPage from "./pages/MatchesPage";
 import MatchDetailsPage from "./pages/MatchDetailsPage";
+import CreateMatchPage from "./pages/CreateMatchPage";
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/matches" element={<MatchesPage />} />
+        <Route path="/matches/create" element={<CreateMatchPage />} />
         <Route path="/matches/:id" element={<MatchDetailsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
