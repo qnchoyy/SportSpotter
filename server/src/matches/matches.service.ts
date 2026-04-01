@@ -176,23 +176,44 @@ export class MatchesService {
   }
 
   async findAll(query: MatchQueryDto): Promise<Match[]> {
-    const where: FindOptionsWhere<Match> = {};
+    const qb = this.matchRepository.createQueryBuilder('match');
+
+    qb.leftJoinAndSelect('match.organizer', 'organizer');
+    qb.leftJoinAndSelect('match.venue', 'venue');
 
     if (query.sport) {
-      where.sport = query.sport;
+      qb.andWhere('match.sport = :sport', { sport: query.sport });
     }
 
     if (query.status) {
-      where.status = query.status;
+      qb.andWhere('match.status = :status', { status: query.status });
     }
 
-    return await this.matchRepository.find({
-      where,
-      relations: ['organizer', 'venue'],
-      order: {
-        createdAt: 'DESC',
-      },
-    });
+    if (query.dateFrom) {
+      qb.andWhere('match.startTime >= :dateFrom', {
+        dateFrom: query.dateFrom,
+      });
+    }
+
+    if (query.dateTo) {
+      qb.andWhere('match.startTime <= :dateTo', {
+        dateTo: query.dateTo,
+      });
+    }
+
+    if (query.city) {
+      qb.andWhere('venue.city = :city', { city: query.city });
+    }
+
+    if (query.availableOnly) {
+      qb.andWhere('match.status = :openStatus', {
+        openStatus: MatchStatus.OPEN,
+      });
+    }
+
+    qb.orderBy('match.startTime', 'ASC');
+
+    return qb.getMany();
   }
 
   async findOneById(id: string): Promise<Match> {
