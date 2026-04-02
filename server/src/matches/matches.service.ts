@@ -202,7 +202,9 @@ export class MatchesService {
     }
 
     if (query.city) {
-      qb.andWhere('venue.city = :city', { city: query.city });
+      qb.andWhere('LOWER(venue.city) LIKE :city', {
+        city: `%${query.city}%`,
+      });
     }
 
     if (query.availableOnly) {
