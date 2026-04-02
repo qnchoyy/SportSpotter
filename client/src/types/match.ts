@@ -31,3 +31,12 @@ export type CreateMatchRequest = {
   maxSkillLevel: SkillLevel;
   tennisFormat?: "singles" | "doubles";
 };
+
+export type MatchQueryParams = {
+  sport?: SportType;
+  status?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  city?: string;
+  availableOnly?: boolean;
+};
