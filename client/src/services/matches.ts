@@ -1,10 +1,14 @@
-import type { CreateMatchRequest, Match } from "../types/match";
+import type {
+  CreateMatchRequest,
+  Match,
+  MatchQueryParams,
+} from "../types/match";
 import type { Participant } from "../types/participant";
 import { client } from "./client";
 
 export const matchesService = {
-  async getMatches(): Promise<Match[]> {
-    const response = await client.get<Match[]>("/matches");
+  async getMatches(params?: MatchQueryParams): Promise<Match[]> {
+    const response = await client.get<Match[]>("/matches", { params });
     return response.data;
   },
 
