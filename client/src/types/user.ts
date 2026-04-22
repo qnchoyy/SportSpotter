@@ -7,3 +7,9 @@ export type User = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type UpdateUserPayload = {
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+};
