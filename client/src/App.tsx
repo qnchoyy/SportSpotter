@@ -6,6 +6,7 @@ import RegisterPage from "./pages/RegisterPage";
 import MatchesPage from "./pages/MatchesPage";
 import MatchDetailsPage from "./pages/MatchDetailsPage";
 import CreateMatchPage from "./pages/CreateMatchPage";
+import ProfilePage from "./pages/ProfilePage";
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/matches" element={<MatchesPage />} />
         <Route path="/matches/create" element={<CreateMatchPage />} />
         <Route path="/matches/:id" element={<MatchDetailsPage />} />
