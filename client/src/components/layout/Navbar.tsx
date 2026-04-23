@@ -1,9 +1,11 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
+  const { profile } = useCurrentUser();
 
   const handleLogout = () => {
     logout();
@@ -29,6 +31,14 @@ const Navbar = () => {
               >
                 Matches
               </NavLink>
+              {isAuthenticated && (
+                <NavLink
+                  to="/profile"
+                  className="text-sm font-medium text-white/70 transition hover:text-white"
+                >
+                  Profile
+                </NavLink>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -39,7 +49,7 @@ const Navbar = () => {
                       Welcome back,
                     </span>
                     <span className="text-sm font-semibold text-indigo-200">
-                      {user?.username}
+                      {profile?.username}
                     </span>
                   </div>
 
