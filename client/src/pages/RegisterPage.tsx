@@ -10,6 +10,7 @@ type FormFields =
   | "username"
   | "firstName"
   | "lastName";
+type FormErrors = Partial<Record<FormFields, string>>;
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();

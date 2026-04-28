@@ -4,6 +4,9 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useUserSkills } from "../hooks/useUserSkills";
 import { useUpdateCurrentUser } from "../hooks/useUpdateCurrentUser";
 
+type ProfileFields = "username" | "firstName" | "lastName";
+type ProfileErrors = Partial<Record<ProfileFields, string>>;
+
 const ProfilePage = () => {
   const { profile, loading } = useCurrentUser();
   const { mutate: updateUser, isPending } = useUpdateCurrentUser();
@@ -12,7 +15,15 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState<"profile" | "skills">("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<typeof profile | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<ProfileErrors>({});
+
+  const clearFieldError = (field: ProfileFields) => {
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
 
   if (loading) return <Spinner />;
   if (!profile) return null;
@@ -70,26 +81,11 @@ const ProfilePage = () => {
                               setErrors({});
                             },
                             onError: (err: any) => {
-                              const message = err.response?.data?.message;
-                              const newErrors: Record<string, string> = {};
+                              const errors = err.response?.data;
 
-                              if (Array.isArray(message)) {
-                                message.forEach((msg: string) => {
-                                  const lower = msg.toLowerCase();
-
-                                  if (lower.includes("username")) {
-                                    newErrors.username = msg;
-                                  } else if (lower.includes("first name")) {
-                                    newErrors.firstName = msg;
-                                  } else if (lower.includes("last name")) {
-                                    newErrors.lastName = msg;
-                                  }
-                                });
-                              } else if (typeof message === "string") {
-                                newErrors.username = message;
+                              if (errors && typeof errors === "object") {
+                                setErrors(errors);
                               }
-
-                              setErrors(newErrors);
                             },
                           },
                         );
@@ -142,10 +138,7 @@ const ProfilePage = () => {
                             prev ? { ...prev, username: value } : prev,
                           );
 
-                          setErrors((prev) => {
-                            const { username, ...rest } = prev;
-                            return rest;
-                          });
+                          clearFieldError("username");
                         }}
                         className={`w-full px-3 py-2 rounded-lg bg-white/5 border text-sm text-white outline-none transition-colors ${
                           errors.username
@@ -186,10 +179,7 @@ const ProfilePage = () => {
                             prev ? { ...prev, firstName: value } : prev,
                           );
 
-                          setErrors((prev) => {
-                            const { firstName, ...rest } = prev;
-                            return rest;
-                          });
+                          clearFieldError("firstName");
                         }}
                         className={`w-full px-3 py-2 rounded-lg bg-white/5 border text-sm text-white outline-none transition-colors ${
                           errors.firstName
@@ -223,10 +213,7 @@ const ProfilePage = () => {
                             prev ? { ...prev, lastName: value } : prev,
                           );
 
-                          setErrors((prev) => {
-                            const { lastName, ...rest } = prev;
-                            return rest;
-                          });
+                          clearFieldError("lastName");
                         }}
                         className={`w-full px-3 py-2 rounded-lg bg-white/5 border text-sm text-white outline-none transition-colors ${
                           errors.lastName
