@@ -3,6 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { authService } from "../services/auth";
 
+type FormFields =
+  | "email"
+  | "password"
+  | "confirmPassword"
+  | "username"
+  | "firstName"
+  | "lastName";
+
 const RegisterPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -15,14 +23,14 @@ const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
+    setErrors({});
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setErrors({ confirmPassword: "Passwords do not match" });
       return;
     }
 
@@ -39,13 +47,21 @@ const RegisterPage = () => {
       login(data.user, data.accessToken);
       navigate("/");
     } catch (err: any) {
-      const msg = err?.response?.data?.message;
-      if (Array.isArray(msg)) setError(msg.join(", "));
-      else if (msg) setError(String(msg));
-      else setError("Something went wrong. Please try again.");
+      const data = err.response?.data;
+      if (data && typeof data === "object") {
+        setErrors(data);
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const clearFieldError = (field: FormFields) => {
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   return (
@@ -55,11 +71,6 @@ const RegisterPage = () => {
         className="w-full max-w-md space-y-3 rounded-lg border border-white/10 bg-slate-900/50 p-6 backdrop-blur"
       >
         <h1 className="text-2xl font-bold text-white text-center">Register</h1>
-        {error && (
-          <div className="rounded bg-red-500/10 border border-red-500/50 p-3 text-sm text-red-400">
-            {error}
-          </div>
-        )}
         <div className="space-y-2">
           <label
             htmlFor="email"
@@ -73,9 +84,19 @@ const RegisterPage = () => {
             value={email}
             required
             disabled={isLoading}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearFieldError("email");
+            }}
+            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
+              errors.email
+                ? "border-red-500"
+                : "border-white/10 focus:border-indigo-500"
+            }`}
           />
+          {errors.email && (
+            <p className="text-xs text-red-400">{errors.email}</p>
+          )}
         </div>
         <div className="space-y-2">
           <label
@@ -90,9 +111,19 @@ const RegisterPage = () => {
             value={password}
             required
             disabled={isLoading}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
+            onChange={(e) => {
+              setPassword(e.target.value);
+              clearFieldError("password");
+            }}
+            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
+              errors.password
+                ? "border-red-500"
+                : "border-white/10 focus:border-indigo-500"
+            }`}
           />
+          {errors.password && (
+            <p className="text-xs text-red-400">{errors.password}</p>
+          )}
         </div>
         <div className="space-y-2">
           <label
@@ -107,9 +138,19 @@ const RegisterPage = () => {
             required
             disabled={isLoading}
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+              clearFieldError("confirmPassword");
+            }}
+            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
+              errors.confirmPassword
+                ? "border-red-500"
+                : "border-white/10 focus:border-indigo-500"
+            }`}
           />
+          {errors.confirmPassword && (
+            <p className="text-xs text-red-400">{errors.confirmPassword}</p>
+          )}
         </div>
         <div className="space-y-2">
           <label
@@ -124,9 +165,19 @@ const RegisterPage = () => {
             value={username}
             required
             disabled={isLoading}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
+            onChange={(e) => {
+              setUsername(e.target.value);
+              clearFieldError("username");
+            }}
+            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
+              errors.username
+                ? "border-red-500"
+                : "border-white/10 focus:border-indigo-500"
+            }`}
           />
+          {errors.username && (
+            <p className="text-xs text-red-400">{errors.username}</p>
+          )}
         </div>
         <div className="space-y-2">
           <label
@@ -141,9 +192,19 @@ const RegisterPage = () => {
             value={firstName}
             required
             disabled={isLoading}
-            onChange={(e) => setFirstName(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
+            onChange={(e) => {
+              setFirstName(e.target.value);
+              clearFieldError("firstName");
+            }}
+            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
+              errors.firstName
+                ? "border-red-500"
+                : "border-white/10 focus:border-indigo-500"
+            }`}
           />
+          {errors.firstName && (
+            <p className="text-xs text-red-400">{errors.firstName}</p>
+          )}
         </div>
         <div className="space-y-2">
           <label
@@ -158,9 +219,19 @@ const RegisterPage = () => {
             value={lastName}
             required
             disabled={isLoading}
-            onChange={(e) => setLastName(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:border-indigo-500 focus:outline-none"
+            onChange={(e) => {
+              setLastName(e.target.value);
+              clearFieldError("lastName");
+            }}
+            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
+              errors.lastName
+                ? "border-red-500"
+                : "border-white/10 focus:border-indigo-500"
+            }`}
           />
+          {errors.lastName && (
+            <p className="text-xs text-red-400">{errors.lastName}</p>
+          )}
         </div>
 
         <button
