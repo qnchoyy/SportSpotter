@@ -23,7 +23,7 @@ export class UsersService {
     });
 
     if (existingEmail) {
-      throw new ConflictException('Email is already taken');
+      throw new ConflictException({ email: 'Email is already taken' });
     }
 
     const existingUsername = await this.userRepository.findOne({
@@ -31,7 +31,7 @@ export class UsersService {
     });
 
     if (existingUsername) {
-      throw new ConflictException('Username is already taken');
+      throw new ConflictException({ username: 'Username is already taken' });
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -70,7 +70,9 @@ export class UsersService {
       });
 
       if (existingUsername) {
-        throw new ConflictException('Username is already taken');
+        throw new ConflictException({
+          username: 'Username is already taken',
+        });
       }
     }
 

@@ -34,9 +34,9 @@ export class UserSkillService {
       },
     });
     if (existingSkill) {
-      throw new ConflictException(
-        `You already have a skill for ${createUserSkillDto.sport}`,
-      );
+      throw new ConflictException({
+        sport: `You already have a skill for ${createUserSkillDto.sport}`,
+      });
     }
 
     const newSkill = this.userSportSkillRepository.create({
