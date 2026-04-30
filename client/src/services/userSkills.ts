@@ -15,11 +15,13 @@ export const userSkillsService = {
     return response.data;
   },
 
-  async updateUserSkill(
-    id: string,
-    data: { skillLevel: SkillLevel },
-  ): Promise<UserSkill> {
-    const response = await client.patch<UserSkill>(`/user-skills/${id}`, data);
+  async updateUserSkill(data: {
+    id: string;
+    skillLevel: SkillLevel;
+  }): Promise<UserSkill> {
+    const response = await client.patch<UserSkill>(`/user-skills/${data.id}`, {
+      skillLevel: data.skillLevel,
+    });
     return response.data;
   },
 };
