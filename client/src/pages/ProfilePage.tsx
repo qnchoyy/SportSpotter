@@ -3,6 +3,9 @@ import Spinner from "../components/ui/Spinner";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useUserSkills } from "../hooks/useUserSkills";
 import { useUpdateCurrentUser } from "../hooks/useUpdateCurrentUser";
+import { useUpdateUserSkill } from "../hooks/useUpdateUserSkill";
+import type { SkillLevel } from "../types/userSkill";
+import toast from "react-hot-toast";
 
 type ProfileFields = "username" | "firstName" | "lastName";
 type ProfileErrors = Partial<Record<ProfileFields, string>>;
@@ -10,6 +13,8 @@ type ProfileErrors = Partial<Record<ProfileFields, string>>;
 const ProfilePage = () => {
   const { profile, loading } = useCurrentUser();
   const { mutate: updateUser, isPending } = useUpdateCurrentUser();
+  const { mutate: updateSkill, isPending: isUpdatingSkill } =
+    useUpdateUserSkill();
   const { skills } = useUserSkills();
 
   const [activeTab, setActiveTab] = useState<"profile" | "skills">("profile");
@@ -24,6 +29,8 @@ const ProfilePage = () => {
       return next;
     });
   };
+
+  const skillLevels: SkillLevel[] = ["beginner", "intermediate", "advanced"];
 
   if (loading) return <Spinner />;
   if (!profile) return null;
@@ -235,7 +242,60 @@ const ProfilePage = () => {
             </div>
           )}
 
-          {activeTab === "skills" && <div>Skills content</div>}
+          {activeTab === "skills" && (
+            <div className="flex flex-col gap-4">
+              {skills.length === 0 && (
+                <p className="text-sm text-white/40">No skills yet.</p>
+              )}
+
+              {skills.map((skill) => (
+                <div
+                  key={skill.id}
+                  className="p-4 rounded-xl bg-white/5 border border-white/10"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <span>{skill.sport === "football" ? "⚽" : "🎾"}</span>
+                    <span className="text-sm font-medium capitalize">
+                      {skill.sport}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {skillLevels.map((level) => {
+                      const isActive = skill.skillLevel === level;
+
+                      return (
+                        <button
+                          key={level}
+                          disabled={isUpdatingSkill || isActive}
+                          onClick={() =>
+                            updateSkill(
+                              { id: skill.id, skillLevel: level },
+                              {
+                                onSuccess: () =>
+                                  toast.success(
+                                    `${skill.sport} skill updated!`,
+                                  ),
+                                onError: () =>
+                                  toast.error("Failed to update skill"),
+                              },
+                            )
+                          }
+                          className={`py-2 rounded-lg text-xs font-medium capitalize transition-colors ${
+                            isActive
+                              ? "bg-indigo-500/15 border border-indigo-500/30 text-indigo-400"
+                              : "bg-white/5 border border-white/10 text-white/60 hover:text-white"
+                          } ${isUpdatingSkill ? "opacity-50 cursor-not-allowed" : ""}`}
+                        >
+                          {level}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
