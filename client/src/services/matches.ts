@@ -24,6 +24,10 @@ export const matchesService = {
     return response.data;
   },
 
+  async leaveMatch(matchId: string): Promise<void> {
+    await client.delete(`/matches/${matchId}/leave`);
+  },
+
   async getParticipants(matchId: string): Promise<Participant[]> {
     const response = await client.get<Participant[]>(
       `/matches/${matchId}/participants`,
