@@ -1,39 +1,25 @@
 import { useParams } from "react-router-dom";
 import { useMatch } from "../hooks/useMatch";
 import Spinner from "../components/ui/Spinner";
-import { matchesService } from "../services/matches";
-import { useEffect, useState } from "react";
-import type { Participant } from "../types/participant";
 import { useAuth } from "../contexts/AuthContext";
 import FootballField from "../components/fields/FootballField";
 import TennisCourt from "../components/fields/TennisCourt";
 import MatchHeader from "../components/matches/MatchHeader";
 import MatchInfoPanel from "../components/matches/MatchInfoPanel";
+import { useMatchParticipants } from "../hooks/useMatchParticipants";
+import { useJoinMatch } from "../hooks/useJoinMatch";
+import { useLeaveMatch } from "../hooks/useLeaveMatch";
 
 const MatchDetailsPage = () => {
-  const [isJoining, setIsJoining] = useState(false);
-  const [participants, setParticipants] = useState<Participant[]>([]);
-
   const { id } = useParams();
-  const { match, loading, error } = useMatch(id!);
+  const { match, loading, error } = useMatch(id);
   const { user } = useAuth();
+  const { participants, loading: participantsLoading } =
+    useMatchParticipants(id);
+  const { mutate: joinMatch, isPending: isJoining } = useJoinMatch();
+  const { mutate: leaveMatch, isPending: isLeaving } = useLeaveMatch();
 
-  const fetchParticipants = async () => {
-    try {
-      if (!id) return;
-
-      const data = await matchesService.getParticipants(id);
-      setParticipants(data);
-    } catch (error) {
-      console.error("Failed to fetch participants", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchParticipants();
-  }, [id]);
-
-  if (loading) {
+  if (loading || participantsLoading) {
     return (
       <div className="py-16">
         <Spinner size="lg" />
@@ -54,18 +40,16 @@ const MatchDetailsPage = () => {
   const isFull = participants.length >= maxPlayers;
   const isNotLoggedIn = !user;
 
-  const handleJoin = async (team: number) => {
-    if (isNotLoggedIn || isJoined || isFull) return;
+  const handleJoin = (team: number) => {
+    if (isNotLoggedIn || isJoined || isFull || isJoining || isLeaving) return;
 
-    try {
-      setIsJoining(true);
-      await matchesService.joinMatch(id!, team);
-      await fetchParticipants();
-    } catch (error) {
-      console.error("failed to join", error);
-    } finally {
-      setIsJoining(false);
-    }
+    joinMatch({ matchId: id!, team });
+  };
+
+  const handleLeave = () => {
+    if (isNotLoggedIn || !isJoined || isLeaving) return;
+
+    leaveMatch(id!);
   };
 
   return (
@@ -108,6 +92,8 @@ const MatchDetailsPage = () => {
             status={match.status}
             venueAddress={match.venue.address}
             venueCity={match.venue.city}
+            onLeave={handleLeave}
+            isLeaving={isLeaving}
           />
         </div>
       </div>

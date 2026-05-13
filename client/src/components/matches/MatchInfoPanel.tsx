@@ -10,6 +10,8 @@ type Props = {
   organizerUsername: string;
   venueAddress: string;
   venueCity: string;
+  onLeave: () => void;
+  isLeaving: boolean;
 };
 
 const MatchInfoPanel = ({
@@ -24,6 +26,8 @@ const MatchInfoPanel = ({
   organizerUsername,
   venueAddress,
   venueCity,
+  onLeave,
+  isLeaving,
 }: Props) => {
   const spotsLeft = maxPlayers - totalPlayers;
 
@@ -61,7 +65,18 @@ const MatchInfoPanel = ({
     }
 
     if (isJoined) {
-      return <p className="text-green-400">You joined this match ✅</p>;
+      return (
+        <div className="space-y-2">
+          <p className="text-green-400">You joined this match ✅</p>
+          <button
+            onClick={onLeave}
+            disabled={isLeaving}
+            className="px-3 py-1.5 text-xs rounded-md bg-white/5 border border-white/10 text-white/70 hover:bg-red-500/10 hover:border-red-400/30 hover:text-red-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLeaving ? "Leaving..." : "Leave match"}
+          </button>
+        </div>
+      );
     }
 
     if (isFull) {
