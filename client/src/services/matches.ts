@@ -28,6 +28,11 @@ export const matchesService = {
     await client.delete(`/matches/${matchId}/leave`);
   },
 
+  async cancelMatch(matchId: string): Promise<Match> {
+    const response = await client.post<Match>(`/matches/${matchId}/cancel`);
+    return response.data;
+  },
+
   async getParticipants(matchId: string): Promise<Participant[]> {
     const response = await client.get<Participant[]>(
       `/matches/${matchId}/participants`,
