@@ -4,6 +4,9 @@ type Props = {
   isJoined: boolean;
   isFull: boolean;
   isNotLoggedIn: boolean;
+  isOrganizer: boolean;
+  onCancel: () => void;
+  isCancelling: boolean;
   minSkillLevel: string;
   maxSkillLevel: string;
   status: string;
@@ -20,6 +23,9 @@ const MatchInfoPanel = ({
   isJoined,
   isFull,
   isNotLoggedIn,
+  isOrganizer,
+  onCancel,
+  isCancelling,
   minSkillLevel,
   maxSkillLevel,
   status,
@@ -31,7 +37,18 @@ const MatchInfoPanel = ({
 }: Props) => {
   const spotsLeft = maxPlayers - totalPlayers;
 
+  const canCancel =
+    isOrganizer && status !== "completed" && status !== "cancelled";
+
   const renderStatusBadge = () => {
+    if (status === "cancelled") {
+      return (
+        <span className="px-3 py-1 text-xs rounded-full bg-red-500/15 text-red-300">
+          Match cancelled
+        </span>
+      );
+    }
+
     if (status === "completed") {
       return (
         <span className="px-3 py-1 text-xs rounded-full bg-white/10 text-gray-300 backdrop-blur">
@@ -56,6 +73,10 @@ const MatchInfoPanel = ({
   };
 
   const renderActionMessage = () => {
+    if (status === "cancelled") {
+      return <p className="text-red-300">This match has been cancelled</p>;
+    }
+
     if (status === "completed") {
       return <p className="text-gray-400">This match has already finished</p>;
     }
@@ -124,6 +145,17 @@ const MatchInfoPanel = ({
       <div className="text-sm pt-3 border-t border-white/10">
         {renderActionMessage()}
       </div>
+      {canCancel && (
+        <div className="pt-3 border-t border-white/10">
+          <button
+            onClick={onCancel}
+            disabled={isCancelling}
+            className="w-full px-3 py-2 text-sm rounded-md bg-red-500/10 border border-red-400/30 text-red-300 hover:bg-red-500/20 hover:border-red-400/50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isCancelling ? "Cancelling..." : "Cancel match"}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

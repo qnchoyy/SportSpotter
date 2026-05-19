@@ -9,6 +9,10 @@ import MatchInfoPanel from "../components/matches/MatchInfoPanel";
 import { useMatchParticipants } from "../hooks/useMatchParticipants";
 import { useJoinMatch } from "../hooks/useJoinMatch";
 import { useLeaveMatch } from "../hooks/useLeaveMatch";
+import { useCancelMatch } from "../hooks/useCancelMatch";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import ConfirmDialog from "../components/ui/ConfirmDialog";
 
 const MatchDetailsPage = () => {
   const { id } = useParams();
@@ -18,6 +22,8 @@ const MatchDetailsPage = () => {
     useMatchParticipants(id);
   const { mutate: joinMatch, isPending: isJoining } = useJoinMatch();
   const { mutate: leaveMatch, isPending: isLeaving } = useLeaveMatch();
+  const { mutate: cancelMatch, isPending: isCancelling } = useCancelMatch();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   if (loading || participantsLoading) {
     return (
@@ -39,6 +45,7 @@ const MatchDetailsPage = () => {
   const maxPlayers = match.playersPerTeam * match.numberOfTeams;
   const isFull = participants.length >= maxPlayers;
   const isNotLoggedIn = !user;
+  const isOrganizer = match.organizer.id === user?.id;
 
   const handleJoin = (team: number) => {
     if (isNotLoggedIn || isJoined || isFull || isJoining || isLeaving) return;
@@ -52,6 +59,24 @@ const MatchDetailsPage = () => {
     leaveMatch(id!);
   };
 
+  const handleCancelClick = () => {
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmCancel = () => {
+    if (!id || !isOrganizer || isCancelling) return;
+
+    cancelMatch(id, {
+      onSuccess: () => {
+        toast.success("Match cancelled successfully");
+        setIsConfirmOpen(false);
+      },
+      onError: () => {
+        toast.error("Failed to cancel match");
+        setIsConfirmOpen(false);
+      },
+    });
+  };
   return (
     <div className="mx-auto max-w-5xl px-4 py-1">
       <div className="space-y-8">
@@ -86,6 +111,9 @@ const MatchDetailsPage = () => {
             isJoined={isJoined}
             isFull={isFull}
             isNotLoggedIn={isNotLoggedIn}
+            isOrganizer={isOrganizer}
+            onCancel={handleCancelClick}
+            isCancelling={isCancelling}
             minSkillLevel={match.minSkillLevel}
             maxSkillLevel={match.maxSkillLevel}
             organizerUsername={match.organizer.username}
@@ -97,6 +125,17 @@ const MatchDetailsPage = () => {
           />
         </div>
       </div>
+      <ConfirmDialog
+        open={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmCancel}
+        title="Cancel match?"
+        description="This action cannot be undone. The match will be cancelled and the venue slot will be released."
+        confirmLabel="Cancel match"
+        cancelLabel="Keep match"
+        isLoading={isCancelling}
+        variant="danger"
+      />
     </div>
   );
 };
