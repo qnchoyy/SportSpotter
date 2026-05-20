@@ -28,6 +28,10 @@ export const matchesService = {
     await client.delete(`/matches/${matchId}/leave`);
   },
 
+  async removeParticipant(matchId: string, userId: string): Promise<void> {
+    await client.delete(`/matches/${matchId}/participants/${userId}`);
+  },
+
   async cancelMatch(matchId: string): Promise<Match> {
     const response = await client.post<Match>(`/matches/${matchId}/cancel`);
     return response.data;
