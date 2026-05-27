@@ -8,6 +8,8 @@ type Props = {
   onJoin: (team: number) => void;
   currentUserId?: string;
   isJoining?: boolean;
+  isOrganizer?: boolean;
+  onRemove?: (userId: string) => void;
 };
 
 const TennisCourt = ({
@@ -16,6 +18,8 @@ const TennisCourt = ({
   onJoin,
   currentUserId,
   isJoining,
+  isOrganizer,
+  onRemove,
 }: Props) => {
   const team1 = participants.filter((p) => p.team === 1);
   const team2 = participants.filter((p) => p.team === 2);
@@ -41,6 +45,8 @@ const TennisCourt = ({
               player={team1[0]}
               onClick={() => onJoin(1)}
               currentUserId={currentUserId}
+              isOrganizer={isOrganizer}
+              onRemove={onRemove}
             />
           </div>
 
@@ -49,6 +55,8 @@ const TennisCourt = ({
               player={team1[1]}
               onClick={() => onJoin(1)}
               currentUserId={currentUserId}
+              isOrganizer={isOrganizer}
+              onRemove={onRemove}
             />
           </div>
         </>
@@ -58,6 +66,8 @@ const TennisCourt = ({
             player={team1[0]}
             onClick={() => onJoin(1)}
             currentUserId={currentUserId}
+            isOrganizer={isOrganizer}
+            onRemove={onRemove}
           />
         </div>
       )}
@@ -69,6 +79,8 @@ const TennisCourt = ({
               player={team2[0]}
               onClick={() => onJoin(2)}
               currentUserId={currentUserId}
+              isOrganizer={isOrganizer}
+              onRemove={onRemove}
             />
           </div>
 
@@ -77,6 +89,8 @@ const TennisCourt = ({
               player={team2[1]}
               onClick={() => onJoin(2)}
               currentUserId={currentUserId}
+              isOrganizer={isOrganizer}
+              onRemove={onRemove}
             />
           </div>
         </>
@@ -86,6 +100,8 @@ const TennisCourt = ({
             player={team2[0]}
             onClick={() => onJoin(2)}
             currentUserId={currentUserId}
+            isOrganizer={isOrganizer}
+            onRemove={onRemove}
           />
         </div>
       )}

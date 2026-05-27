@@ -13,6 +13,7 @@ import { useCancelMatch } from "../hooks/useCancelMatch";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import ConfirmDialog from "../components/ui/ConfirmDialog";
+import { useRemoveParticipant } from "../hooks/useRemoveParticipant";
 
 const MatchDetailsPage = () => {
   const { id } = useParams();
@@ -23,7 +24,11 @@ const MatchDetailsPage = () => {
   const { mutate: joinMatch, isPending: isJoining } = useJoinMatch();
   const { mutate: leaveMatch, isPending: isLeaving } = useLeaveMatch();
   const { mutate: cancelMatch, isPending: isCancelling } = useCancelMatch();
+  const { mutate: removeParticipant, isPending: isRemoving } =
+    useRemoveParticipant();
+
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [userToRemove, setUserToRemove] = useState<string | null>(null);
 
   if (loading || participantsLoading) {
     return (
@@ -46,6 +51,8 @@ const MatchDetailsPage = () => {
   const isFull = participants.length >= maxPlayers;
   const isNotLoggedIn = !user;
   const isOrganizer = match.organizer.id === user?.id;
+  const canManageParticipants =
+    isOrganizer && match.status !== "completed" && match.status !== "cancelled";
 
   const handleJoin = (team: number) => {
     if (isNotLoggedIn || isJoined || isFull || isJoining || isLeaving) return;
@@ -77,6 +84,28 @@ const MatchDetailsPage = () => {
       },
     });
   };
+
+  const handleRemoveClick = (userId: string) => {
+    setUserToRemove(userId);
+  };
+
+  const handleConfirmRemove = () => {
+    if (!id || !canManageParticipants || !userToRemove || isRemoving) return;
+
+    removeParticipant(
+      { matchId: id, userId: userToRemove },
+      {
+        onSuccess: () => {
+          toast.success("Player removed");
+          setUserToRemove(null);
+        },
+        onError: () => {
+          toast.error("Failed to remove player");
+          setUserToRemove(null);
+        },
+      },
+    );
+  };
   return (
     <div className="mx-auto max-w-5xl px-4 py-1">
       <div className="space-y-8">
@@ -91,6 +120,8 @@ const MatchDetailsPage = () => {
                 onJoin={handleJoin}
                 currentUserId={user?.id}
                 isJoining={isJoining}
+                isOrganizer={canManageParticipants}
+                onRemove={handleRemoveClick}
               />
             )}
 
@@ -101,6 +132,8 @@ const MatchDetailsPage = () => {
                 onJoin={handleJoin}
                 currentUserId={user?.id}
                 isJoining={isJoining}
+                isOrganizer={canManageParticipants}
+                onRemove={handleRemoveClick}
               />
             )}
           </div>
@@ -134,6 +167,18 @@ const MatchDetailsPage = () => {
         confirmLabel="Cancel match"
         cancelLabel="Keep match"
         isLoading={isCancelling}
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={userToRemove !== null}
+        onClose={() => setUserToRemove(null)}
+        onConfirm={handleConfirmRemove}
+        title="Remove player?"
+        description="This player will be removed from the match. They can rejoin later if there's space."
+        confirmLabel="Remove player"
+        cancelLabel="Keep player"
+        isLoading={isRemoving}
         variant="danger"
       />
     </div>

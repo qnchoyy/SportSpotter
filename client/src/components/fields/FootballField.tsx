@@ -8,6 +8,8 @@ type Props = {
   onJoin: (team: number) => void;
   currentUserId?: string;
   isJoining?: boolean;
+  isOrganizer?: boolean;
+  onRemove?: (userId: string) => void;
 };
 
 const FootballField = ({
@@ -16,6 +18,8 @@ const FootballField = ({
   onJoin,
   currentUserId,
   isJoining,
+  isOrganizer,
+  onRemove,
 }: Props) => {
   const team1 = participants.filter((p) => p.team === 1);
   const team2 = participants.filter((p) => p.team === 2);
@@ -54,6 +58,8 @@ const FootballField = ({
                 player={player}
                 onClick={() => onJoin(1)}
                 currentUserId={currentUserId}
+                isOrganizer={isOrganizer}
+                onRemove={onRemove}
               />
             );
           })}
@@ -69,6 +75,8 @@ const FootballField = ({
                 player={player}
                 onClick={() => onJoin(1)}
                 currentUserId={currentUserId}
+                isOrganizer={isOrganizer}
+                onRemove={onRemove}
               />
             );
           })}
@@ -86,6 +94,8 @@ const FootballField = ({
                 player={player}
                 onClick={() => onJoin(2)}
                 currentUserId={currentUserId}
+                isOrganizer={isOrganizer}
+                onRemove={onRemove}
               />
             );
           })}
@@ -101,6 +111,8 @@ const FootballField = ({
                 player={player}
                 onClick={() => onJoin(2)}
                 currentUserId={currentUserId}
+                isOrganizer={isOrganizer}
+                onRemove={onRemove}
               />
             );
           })}
