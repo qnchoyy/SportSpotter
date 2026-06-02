@@ -1,14 +1,35 @@
 type FeatureCardProps = {
+  number: string;
   title: string;
   description: string;
+  highlight?: boolean;
 };
 
-const FeatureCard = ({ title, description }: FeatureCardProps) => {
+const FeatureCard = ({
+  number,
+  title,
+  description,
+  highlight = false,
+}: FeatureCardProps) => {
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-900/40 p-6 text-center transition hover:-translate-y-1 hover:border-blue-500/50">
-      <h3 className="text-xl font-semibold text-white">{title}</h3>
+    <div
+      className={`rounded-xl border p-8 transition hover:-translate-y-1 ${
+        highlight ? "border-lime bg-lime" : "border-border bg-surface"
+      }`}
+    >
+      <span
+        className={`text-4xl font-bold ${
+          highlight ? "text-ink" : "text-lime-dark"
+        }`}
+      >
+        {number}
+      </span>
 
-      <p className="mt-2 text-gray-400">{description}</p>
+      <h3 className="mt-4 text-xl font-bold text-ink">{title}</h3>
+
+      <p className={`mt-2 ${highlight ? "text-ink/70" : "text-ink-muted"}`}>
+        {description}
+      </p>
     </div>
   );
 };

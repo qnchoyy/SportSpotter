@@ -12,6 +12,11 @@ type MatchCardProps = {
   maxSkillLevel: string;
 };
 
+const sportBadgeStyles: Record<MatchCardProps["sport"], string> = {
+  football: "bg-lime text-ink",
+  tennis: "bg-ink text-surface",
+};
+
 const MatchCard = ({
   id,
   sport,
@@ -38,29 +43,35 @@ const MatchCard = ({
   return (
     <Link
       to={`/matches/${id}`}
-      className="block rounded-xl border border-slate-700 bg-slate-900/40 p-6 transition hover:-translate-y-1 hover:border-blue-500/50"
+      className="block rounded-xl border border-border bg-surface p-6 transition hover:-translate-y-1 hover:border-ink/30"
     >
-      <div className="inline-flex items-center gap-2 rounded-full bg-slate-800 px-3 py-1 text-sm font-medium text-gray-200">
+      <span
+        className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold capitalize ${sportBadgeStyles[sport]}`}
+      >
         <span>{sportIcon}</span>
-        <span className="capitalize">{sport}</span>
-      </div>
+        <span>{sport}</span>
+      </span>
 
-      <div className="mt-3 text-gray-400">
-        {venueName} • {city}
-      </div>
+      <h3 className="mt-4 text-lg font-bold text-ink">{venueName}</h3>
+      <p className="mt-1 text-sm text-ink-muted">{city}</p>
 
-      <div className="mt-3 text-gray-400">{formattedDate}</div>
+      <p className="mt-3 text-sm font-medium text-ink">{formattedDate}</p>
 
-      <div className="mt-4 text-sm text-gray-400">
-        {playersPerTeam}v{playersPerTeam} • {numberOfTeams} teams
-      </div>
+      <div className="my-4 h-px bg-border" />
 
-      <div className="text-sm text-gray-400">
-        Skill: {minSkillLevel} - {maxSkillLevel}
-      </div>
-
-      <div className="mt-4 text-sm text-gray-300">
-        Max players: {maxPlayers}
+      <div className="flex items-center justify-between text-sm">
+        <div className="text-ink-muted">
+          <span className="font-semibold text-ink">
+            {playersPerTeam}v{playersPerTeam}
+          </span>{" "}
+          · {maxPlayers} players
+        </div>
+        <div className="text-ink-muted">
+          Skill:{" "}
+          <span className="font-semibold text-ink">
+            {minSkillLevel}–{maxSkillLevel}
+          </span>
+        </div>
       </div>
     </Link>
   );
