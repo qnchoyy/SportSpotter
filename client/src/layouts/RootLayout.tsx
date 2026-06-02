@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useUserSkills } from "../hooks/useUserSkills";
 import { useEffect, useState } from "react";
 import SkillSetupDialog from "../components/skills/SkillSetupDialog";
+import Footer from "../components/layout/Footer";
 
 const RootLayout = () => {
   const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
@@ -18,11 +19,13 @@ const RootLayout = () => {
   }, [shouldShowSkillDialog]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-900 to-black text-gray-100">
+    <div className="min-h-screen text-ink">
       <Navbar />
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-6">
         <Outlet />
       </main>
+
+      <Footer />
 
       <SkillSetupDialog
         open={isSkillDialogOpen}

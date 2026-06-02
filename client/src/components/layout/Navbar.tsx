@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import Button from "../ui/Button";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -12,68 +13,82 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+    `relative text-sm font-medium transition-colors ${
+      isActive ? "text-ink" : "text-ink-muted hover:text-ink"
+    }`;
+
   return (
-    <div className="sticky top-0 z-50 px-4 pt-4">
-      <div className="mx-auto max-w-5xl">
-        <div className="rounded-full border border-white/10 bg-slate-950/40 px-4 py-3 backdrop-blur-xl">
+    <div className="top-0 z-50 px-4 pt-4">
+      <div className="mx-auto max-w-6xl">
+        <div className="rounded-full border border-border/80 bg-surface px-5 py-3 shadow-[0_8px_30px_-12px_var(--color-lime)]">
           <div className="flex items-center justify-between">
             <NavLink
               to="/"
-              className="font-semibold text-white transition hover:text-white/90"
+              className="text-lg font-bold tracking-tight text-ink transition-colors hover:text-ink-muted"
             >
               SportSpotter
             </NavLink>
 
-            <div className="flex items-center gap-6">
-              <NavLink
-                to="/matches"
-                className="text-sm font-medium text-white/70 transition hover:text-white"
-              >
-                Matches
+            <div className="flex items-center gap-8">
+              <NavLink to="/" end className={navLinkClass}>
+                {({ isActive }) => (
+                  <>
+                    Home
+                    {isActive && (
+                      <span className="absolute -bottom-2 left-0 right-0 h-0.5 rounded-full bg-lime shadow-[0_0_8px_var(--color-lime)]" />
+                    )}
+                  </>
+                )}
               </NavLink>
+
+              <NavLink to="/matches" className={navLinkClass}>
+                {({ isActive }) => (
+                  <>
+                    Matches
+                    {isActive && (
+                      <span className="absolute -bottom-2 left-0 right-0 h-0.5 rounded-full bg-lime shadow-[0_0_8px_var(--color-lime)]" />
+                    )}
+                  </>
+                )}
+              </NavLink>
+
               {isAuthenticated && (
-                <NavLink
-                  to="/profile"
-                  className="text-sm font-medium text-white/70 transition hover:text-white"
-                >
-                  Profile
+                <NavLink to="/profile" className={navLinkClass}>
+                  {({ isActive }) => (
+                    <>
+                      Profile
+                      {isActive && (
+                        <span className="absolute -bottom-2 left-0 right-0 h-0.5 rounded-full bg-lime shadow-[0_0_8px_var(--color-lime)]" />
+                      )}
+                    </>
+                  )}
                 </NavLink>
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {isAuthenticated ? (
                 <>
-                  <div className="flex items-center gap-3 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-2">
-                    <span className="text-xs text-indigo-400">
-                      Welcome back,
-                    </span>
-                    <span className="text-sm font-semibold text-indigo-200">
-                      {profile?.username}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={handleLogout}
-                    className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
-                  >
+                  <span className="text-sm font-medium text-ink-muted">
+                    Hi,{" "}
+                    <span className="text-lime-dark">{profile?.username}</span>
+                  </span>
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>
                     Logout
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
-                  <NavLink
-                    to="/login"
-                    className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
-                  >
-                    Log In
+                  <NavLink to="/login">
+                    <Button variant="ghost" size="sm">
+                      Log In
+                    </Button>
                   </NavLink>
-
-                  <NavLink
-                    to="/register"
-                    className="rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_-18px_rgba(99,102,241,1)] transition hover:brightness-110 active:brightness-95"
-                  >
-                    Get Started
+                  <NavLink to="/register">
+                    <Button variant="primary" size="sm">
+                      Get Started
+                    </Button>
                   </NavLink>
                 </>
               )}
