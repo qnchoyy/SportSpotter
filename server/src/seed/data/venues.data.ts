@@ -16,6 +16,7 @@ export const venuesData = [
     slotDurationMinutes: 60,
   },
   {
+    name: 'Green Sport',
     city: 'Sofia',
     address: 'SPZ Slatina, 1574 Sofia',
     latitude: 42.6771807,
