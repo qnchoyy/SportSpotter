@@ -35,4 +35,10 @@ export class VenueResponseDto {
 
   @Expose()
   longitude: number;
+
+  @Expose()
+  photoUrl?: string;
+
+  @Expose()
+  placeId?: string;
 }

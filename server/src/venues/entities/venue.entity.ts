@@ -27,6 +27,12 @@ export class Venue {
   @Column({ type: 'decimal', precision: 10, scale: 6 })
   longitude: number;
 
+  @Column({ nullable: true })
+  photoUrl?: string;
+
+  @Column({ nullable: true })
+  placeId?: string;
+
   @Column({ type: 'time', default: '11:00' })
   openingTime: string;
 
