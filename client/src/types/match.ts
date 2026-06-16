@@ -13,6 +13,7 @@ export type Match = {
     name: string;
     city: string;
     address: string;
+    photoUrl?: string;
   };
   organizer: {
     id: string;
