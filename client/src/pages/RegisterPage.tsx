@@ -2,6 +2,7 @@ import { useState, type SyntheticEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { authService } from "../services/auth";
+import Button from "../components/ui/Button";
 
 type FormFields =
   | "email"
@@ -65,193 +66,197 @@ const RegisterPage = () => {
     });
   };
 
+  const fieldClass = (field: FormFields) =>
+    `w-full rounded-lg border bg-surface-muted px-4 py-2.5 text-sm text-ink placeholder:text-ink-subtle outline-none transition-colors ${
+      errors[field] ? "border-danger" : "border-border focus:border-ink/30"
+    }`;
+
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-[70vh] items-center justify-center py-10">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md space-y-3 rounded-lg border border-white/10 bg-slate-900/50 p-6 backdrop-blur"
+        className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-8 shadow-md"
       >
-        <h1 className="text-2xl font-bold text-white text-center">Register</h1>
-        <div className="space-y-2">
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            required
-            disabled={isLoading}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              clearFieldError("email");
-            }}
-            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
-              errors.email
-                ? "border-red-500"
-                : "border-white/10 focus:border-indigo-500"
-            }`}
-          />
-          {errors.email && (
-            <p className="text-xs text-red-400">{errors.email}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            required
-            disabled={isLoading}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              clearFieldError("password");
-            }}
-            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
-              errors.password
-                ? "border-red-500"
-                : "border-white/10 focus:border-indigo-500"
-            }`}
-          />
-          {errors.password && (
-            <p className="text-xs text-red-400">{errors.password}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor="confirmPassword"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Confirm Password
-          </label>
-          <input
-            id="confirmPassword"
-            type="password"
-            required
-            disabled={isLoading}
-            value={confirmPassword}
-            onChange={(e) => {
-              setConfirmPassword(e.target.value);
-              clearFieldError("confirmPassword");
-            }}
-            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
-              errors.confirmPassword
-                ? "border-red-500"
-                : "border-white/10 focus:border-indigo-500"
-            }`}
-          />
-          {errors.confirmPassword && (
-            <p className="text-xs text-red-400">{errors.confirmPassword}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor="username"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Username
-          </label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            required
-            disabled={isLoading}
-            onChange={(e) => {
-              setUsername(e.target.value);
-              clearFieldError("username");
-            }}
-            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
-              errors.username
-                ? "border-red-500"
-                : "border-white/10 focus:border-indigo-500"
-            }`}
-          />
-          {errors.username && (
-            <p className="text-xs text-red-400">{errors.username}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor="firstName"
-            className="block text-sm font-medium text-gray-300"
-          >
-            First Name
-          </label>
-          <input
-            id="firstName"
-            type="text"
-            value={firstName}
-            required
-            disabled={isLoading}
-            onChange={(e) => {
-              setFirstName(e.target.value);
-              clearFieldError("firstName");
-            }}
-            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
-              errors.firstName
-                ? "border-red-500"
-                : "border-white/10 focus:border-indigo-500"
-            }`}
-          />
-          {errors.firstName && (
-            <p className="text-xs text-red-400">{errors.firstName}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <label
-            htmlFor="lastName"
-            className="block text-sm font-medium text-gray-300"
-          >
-            Last Name
-          </label>
-          <input
-            id="lastName"
-            type="text"
-            value={lastName}
-            required
-            disabled={isLoading}
-            onChange={(e) => {
-              setLastName(e.target.value);
-              clearFieldError("lastName");
-            }}
-            className={`w-full rounded-lg border bg-slate-800/50 px-4 py-2 text-white placeholder-gray-500 focus:outline-none ${
-              errors.lastName
-                ? "border-red-500"
-                : "border-white/10 focus:border-indigo-500"
-            }`}
-          />
-          {errors.lastName && (
-            <p className="text-xs text-red-400">{errors.lastName}</p>
-          )}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-lime to-transparent" />
+
+        <div className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-lime" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-lime-dark">
+            Get started
+          </span>
         </div>
 
-        <button
+        <h1 className="mt-3 text-2xl font-bold tracking-tight text-ink">
+          Create your account
+        </h1>
+
+        <div className="mt-6 space-y-4">
+          <div className="space-y-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-ink"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              disabled={isLoading}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearFieldError("email");
+              }}
+              className={fieldClass("email")}
+            />
+            {errors.email && (
+              <p className="text-xs text-danger">{errors.email}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-ink"
+            >
+              Username
+            </label>
+            <input
+              id="username"
+              type="text"
+              required
+              disabled={isLoading}
+              value={username}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                clearFieldError("username");
+              }}
+              className={fieldClass("username")}
+            />
+            {errors.username && (
+              <p className="text-xs text-danger">{errors.username}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-ink"
+              >
+                First Name
+              </label>
+              <input
+                id="firstName"
+                type="text"
+                required
+                disabled={isLoading}
+                value={firstName}
+                onChange={(e) => {
+                  setFirstName(e.target.value);
+                  clearFieldError("firstName");
+                }}
+                className={fieldClass("firstName")}
+              />
+              {errors.firstName && (
+                <p className="text-xs text-danger">{errors.firstName}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-ink"
+              >
+                Last Name
+              </label>
+              <input
+                id="lastName"
+                type="text"
+                required
+                disabled={isLoading}
+                value={lastName}
+                onChange={(e) => {
+                  setLastName(e.target.value);
+                  clearFieldError("lastName");
+                }}
+                className={fieldClass("lastName")}
+              />
+              {errors.lastName && (
+                <p className="text-xs text-danger">{errors.lastName}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-ink"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              disabled={isLoading}
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                clearFieldError("password");
+              }}
+              className={fieldClass("password")}
+            />
+            {errors.password && (
+              <p className="text-xs text-danger">{errors.password}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-ink"
+            >
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              required
+              disabled={isLoading}
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                clearFieldError("confirmPassword");
+              }}
+              className={fieldClass("confirmPassword")}
+            />
+            {errors.confirmPassword && (
+              <p className="text-xs text-danger">{errors.confirmPassword}</p>
+            )}
+          </div>
+        </div>
+
+        <Button
           type="submit"
+          variant="primary"
+          size="lg"
           disabled={isLoading}
-          className="w-full rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 px-4 py-2 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-6 w-full"
         >
-          {isLoading ? "Registering.." : "Register"}
-        </button>
+          {isLoading ? "Registering..." : "Register"}
+        </Button>
 
-        <div className="text-center text-sm text-gray-400">
+        <p className="mt-6 text-center text-sm text-ink-muted">
           Already have an account?{" "}
           <Link
             to="/login"
-            className="text-indigo-400 hover:text-indigo-300 transition"
+            className="font-medium text-lime-dark transition-colors hover:text-ink"
           >
             Log in
           </Link>
-        </div>
+        </p>
       </form>
     </div>
   );
