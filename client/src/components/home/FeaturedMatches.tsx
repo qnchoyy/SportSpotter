@@ -55,18 +55,7 @@ const FeaturedMatches = () => {
         {!loading && !error && featuredMatches.length > 0 && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {featuredMatches.map((match) => (
-              <MatchCard
-                key={match.id}
-                id={match.id}
-                sport={match.sport}
-                venueName={match.venue.name}
-                city={match.venue.city}
-                startTime={match.startTime}
-                playersPerTeam={match.playersPerTeam}
-                numberOfTeams={match.numberOfTeams}
-                minSkillLevel={match.minSkillLevel}
-                maxSkillLevel={match.maxSkillLevel}
-              />
+              <MatchCard key={match.id} match={match} />
             ))}
           </div>
         )}
